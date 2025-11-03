@@ -1,0 +1,60 @@
+# PlakatPro - Production Environment Variables
+# Kopiere diese Werte in Vercel Dashboard → Settings → Environment Variables
+
+# ====================
+# ERFORDERLICH
+# ====================
+
+DATABASE_URL=postgresql://username:password@ep-xxx.eu-central-1.aws.neon.tech/plakatpro?sslmode=require
+SESSION_SECRET=GENERIERE_EINEN_SEHR_LANGEN_ZUFÄLLIGEN_STRING_MINDESTENS_32_ZEICHEN
+APP_URL=https://DEINE-APP.vercel.app
+NODE_ENV=production
+
+# ====================
+# GOOGLE MAPS (Optional)
+# ====================
+
+GOOGLE_MAPS_API_KEY=AIzaSy...
+
+# ====================
+# GOOGLE PHOTOS OAUTH (Optional)
+# ====================
+
+GOOGLE_CLIENT_ID=123456789.apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=GOCSPX-...
+GOOGLE_REDIRECT_URI=https://DEINE-APP.vercel.app/api/auth/google/callback
+
+# ====================
+# SMTP / E-MAIL (Optional)
+# ====================
+
+SMTP_HOST=smtp.mailbox.org
+SMTP_PORT=587
+SMTP_USER=info@deine-domain.de
+SMTP_PASS=dein-smtp-passwort
+SMTP_FROM="Werbeinsel <info@deine-domain.de>"
+
+# ====================
+# HINWEISE
+# ====================
+
+# 1. SESSION_SECRET generieren:
+#    - Online: https://randomkeygen.com (CodeIgniter Encryption Keys)
+#    - PowerShell: -join ((65..90) + (97..122) + (48..57) | Get-Random -Count 32 | % {[char]$_})
+#    - Node.js: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+
+# 2. APP_URL:
+#    - Erst nach Deployment bekannt!
+#    - Format: https://plakatpro-xxx.vercel.app
+#    - Oder Custom Domain: https://plakatpro.deine-domain.de
+
+# 3. GOOGLE_REDIRECT_URI:
+#    - MUSS EXAKT mit Google Cloud Console übereinstimmen
+#    - Format: https://DEINE-APP.vercel.app/api/auth/google/callback
+#    - Nach Deployment in Google Console hinzufügen!
+
+# 4. DATABASE_URL:
+#    - Nutze PRODUCTION Datenbank (nicht dev!)
+#    - Separate Neon Branch empfohlen
+#    - WICHTIG: ?sslmode=require am Ende!
+
