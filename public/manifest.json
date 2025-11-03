@@ -1,0 +1,53 @@
+{
+  "name": "PlakatPro - Plakatierer App",
+  "short_name": "PlakatPro",
+  "description": "Professionelles Kampagnenmanagement für Plakatkampagnen",
+  "start_url": "/m/tours",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#FFD800",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity"],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Meine Touren",
+      "short_name": "Touren",
+      "description": "Zeige alle meine Touren",
+      "url": "/m/tours",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "short_name": "Dashboard",
+      "description": "Kanban Dashboard öffnen",
+      "url": "/dashboard",
+      "icons": [
+        {
+          "src": "/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    }
+  ]
+}
+

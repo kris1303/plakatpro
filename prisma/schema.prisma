@@ -1,0 +1,224 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum PermitStatus {
+  requested
+  info_needed
+  approved
+  approved_with_conditions
+  rejected
+}
+
+enum RouteStatus {
+  planned
+  in_progress
+  done
+}
+
+enum PlacementStatus {
+  planned
+  hung
+  checked
+  removed
+}
+
+enum CampaignStatus {
+  backlog
+  permits
+  print
+  planning
+  hanging
+  control
+  removal_plan
+  removal_live
+  report
+  archive
+}
+
+model Client {
+  id        String     @id @default(cuid())
+  name      String
+  email     String?
+  phone     String?
+  address   String?
+  campaigns Campaign[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model Campaign {
+  id                    String         @id @default(cuid())
+  title                 String
+  eventName             String
+  locationName          String?
+  startDate             DateTime
+  endDate               DateTime
+  status                CampaignStatus @default(backlog)
+  notes                 String?
+  clientId              String?
+  client                Client?        @relation(fields: [clientId], references: [id])
+  permits               Permit[]
+  routes                Route[]
+  planItems             PlanItem[]
+  photos                Photo[]
+  tasks                 Task[]
+  reminders             Reminder[]
+  googlePhotosAlbumId   String?
+  googlePhotosShareLink String?
+  createdAt             DateTime       @default(now())
+  updatedAt             DateTime       @updatedAt
+}
+
+model City {
+  id         String      @id @default(cuid())
+  name       String
+  email      String?
+  feeModel   String? // pauschal / proPlakat / proZeitraum
+  fee        Float?
+  maxQty     Int?
+  maxSize    String? // A1/A0
+  placeId    String? // Google Place ID
+  lat        Float?
+  lng        Float?
+  permits    Permit[]
+  routeStops RouteStop[]
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+}
+
+model Permit {
+  id          String       @id @default(cuid())
+  campaignId  String
+  campaign    Campaign     @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  cityId      String
+  city        City         @relation(fields: [cityId], references: [id])
+  status      PermitStatus @default(requested)
+  fee         Float?
+  requestedAt DateTime     @default(now())
+  decidedAt   DateTime?
+  notes       String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model PosterFormat {
+  id        String     @id @default(cuid())
+  name      String // A1, A0, etc.
+  widthMm   Int
+  heightMm  Int
+  planItems PlanItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model Installer {
+  id        String   @id @default(cuid())
+  name      String
+  phone     String?
+  email     String?
+  routes    Route[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Route {
+  id          String      @id @default(cuid())
+  installerId String?
+  installer   Installer?  @relation(fields: [installerId], references: [id])
+  plannedDate DateTime
+  status      RouteStatus @default(planned)
+  stops       RouteStop[]
+  campaignId  String? // optional: reine 1-Kampagnen-Touren
+  campaign    Campaign?   @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model RouteStop {
+  id        String     @id @default(cuid())
+  routeId   String
+  route     Route      @relation(fields: [routeId], references: [id], onDelete: Cascade)
+  cityId    String?
+  city      City?      @relation(fields: [cityId], references: [id])
+  seq       Int        @default(0) // Reihenfolge
+  placeId   String? // Google Place ID
+  lat       Float?
+  lng       Float?
+  notes     String?
+  planItems PlanItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model PlanItem {
+  id           String       @id @default(cuid())
+  routeStopId  String
+  routeStop    RouteStop    @relation(fields: [routeStopId], references: [id], onDelete: Cascade)
+  campaignId   String
+  campaign     Campaign     @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  formatId     String
+  format       PosterFormat @relation(fields: [formatId], references: [id])
+  plannedQty   Int
+  remainingQty Int          @default(0)
+  placements   Placement[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+
+model Placement {
+  id         String          @id @default(cuid())
+  planItemId String
+  planItem   PlanItem        @relation(fields: [planItemId], references: [id], onDelete: Cascade)
+  status     PlacementStatus @default(planned)
+  takenAt    DateTime?
+  lat        Float?
+  lng        Float?
+  photoId    String?
+  photo      Photo?          @relation(fields: [photoId], references: [id])
+  createdAt  DateTime        @default(now())
+  updatedAt  DateTime        @updatedAt
+}
+
+model Photo {
+  id                String      @id @default(cuid())
+  campaignId        String
+  campaign          Campaign    @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  filePath          String? // falls lokal genutzt
+  googleMediaItemId String?
+  takenAt           DateTime?
+  lat               Float?
+  lng               Float?
+  exifJson          String?
+  placements        Placement[]
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+}
+
+model Task {
+  id         String    @id @default(cuid())
+  campaignId String?
+  campaign   Campaign? @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  title      String
+  status     String    @default("open")
+  dueDate    DateTime?
+  notes      String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}
+
+model Reminder {
+  id         String    @id @default(cuid())
+  campaignId String?
+  campaign   Campaign? @relation(fields: [campaignId], references: [id], onDelete: SetNull)
+  type       String
+  runAt      DateTime
+  doneAt     DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+}

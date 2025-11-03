@@ -1,0 +1,97 @@
+import { prisma } from "@/lib/prisma";
+import KanbanBoard from "@/components/KanbanBoard";
+import Link from "next/link";
+
+export default async function DashboardPage() {
+  const campaigns = await prisma.campaign.findMany({
+    include: {
+      client: true,
+      _count: {
+        select: {
+          permits: true,
+          routes: true,
+          photos: true,
+        },
+      },
+    },
+    orderBy: { startDate: "desc" },
+  });
+
+  const stats = {
+    totalCampaigns: campaigns.length,
+    activeCampaigns: campaigns.filter(
+      (c) => new Date(c.startDate) <= new Date() && new Date(c.endDate) >= new Date()
+    ).length,
+    totalPermits: campaigns.reduce((sum, c) => sum + c._count.permits, 0),
+    totalPhotos: campaigns.reduce((sum, c) => sum + c._count.photos, 0),
+  };
+
+  return (
+    <div className="min-h-screen p-6">
+      <div className="max-w-[2000px] mx-auto">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-brand-yellow mb-2">
+            📊 Dashboard
+          </h1>
+          <p className="text-gray-400">
+            Kampagnenübersicht & Kanban-Board
+          </p>
+        </div>
+
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+          <div className="card">
+            <div className="text-sm text-gray-400 mb-1">Kampagnen gesamt</div>
+            <div className="text-3xl font-bold text-brand-yellow">
+              {stats.totalCampaigns}
+            </div>
+          </div>
+          
+          <div className="card">
+            <div className="text-sm text-gray-400 mb-1">Aktive Kampagnen</div>
+            <div className="text-3xl font-bold text-green-500">
+              {stats.activeCampaigns}
+            </div>
+          </div>
+          
+          <div className="card">
+            <div className="text-sm text-gray-400 mb-1">Genehmigungen</div>
+            <div className="text-3xl font-bold text-blue-500">
+              {stats.totalPermits}
+            </div>
+          </div>
+          
+          <div className="card">
+            <div className="text-sm text-gray-400 mb-1">Fotos gesamt</div>
+            <div className="text-3xl font-bold text-purple-500">
+              {stats.totalPhotos}
+            </div>
+          </div>
+        </div>
+
+        {/* Quick Actions */}
+        <div className="flex gap-4 mb-8">
+          <Link href="/campaigns/new" className="btn-primary">
+            ➕ Neue Kampagne
+          </Link>
+          <Link href="/m/tours" className="btn-secondary">
+            🚗 Touren verwalten
+          </Link>
+          <Link href="/permits" className="btn-secondary">
+            📋 Genehmigungen
+          </Link>
+        </div>
+
+        {/* Kanban Board */}
+        <div className="bg-zinc-900/30 rounded-lg p-6">
+          <h2 className="text-2xl font-bold mb-4 text-brand-yellow">
+            Kanban Board
+          </h2>
+          <KanbanBoard campaigns={campaigns} />
+        </div>
+      </div>
+    </div>
+  );
+}
+
