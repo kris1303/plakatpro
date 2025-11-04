@@ -84,16 +84,28 @@ export default async function CampaignsPage() {
                   <span>{formatDate(campaign.endDate)}</span>
                 </div>
 
-                <div className="flex gap-2 pt-4 border-t border-gray-100">
-                  <span className="badge badge-blue">
-                    📋 {campaign._count.permits}
-                  </span>
-                  <span className="badge badge-green">
-                    🚗 {campaign._count.routes}
-                  </span>
-                  <span className="badge badge-gray">
-                    📸 {campaign._count.photos}
-                  </span>
+                <div className="flex flex-col gap-3 pt-4 border-t border-gray-100">
+                  <div className="flex gap-2">
+                    <span className="badge badge-blue">
+                      📋 {campaign._count.permits}
+                    </span>
+                    <span className="badge badge-green">
+                      🚗 {campaign._count.routes}
+                    </span>
+                    <span className="badge badge-gray">
+                      📸 {campaign._count.photos}
+                    </span>
+                  </div>
+                  
+                  {campaign._count.permits > 0 && (
+                    <Link
+                      href={`/campaigns/${campaign.id}/permits`}
+                      className="text-sm font-medium text-primary-600 hover:text-primary-700 flex items-center gap-1"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      → Genehmigungen verwalten
+                    </Link>
+                  )}
                 </div>
               </Link>
             );

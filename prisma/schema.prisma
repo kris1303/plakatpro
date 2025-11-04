@@ -41,29 +41,40 @@ enum CampaignStatus {
   archive
 }
 
+enum DistributionListStatus {
+  draft
+  sent
+  accepted
+  rejected
+  revised
+}
+
 model Client {
-  id        String     @id @default(cuid())
-  name      String
-  email     String?
-  phone     String?
-  address   String?
-  campaigns Campaign[]
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  id                String             @id @default(cuid())
+  name              String
+  email             String?
+  phone             String?
+  address           String?
+  campaigns         Campaign[]
+  distributionLists DistributionList[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
 }
 
 model Campaign {
-  id                    String         @id @default(cuid())
+  id                    String            @id @default(cuid())
   eventName             String // Event-Name (z.B. Sommerfest 2025)
   eventAddress          String? // Adresse der Event-Location
   eventDate             DateTime? // Datum des Events
   startDate             DateTime // Werbezeitraum Start
   endDate               DateTime // Werbezeitraum Ende
   posterTemplate        String? // Dateiname der Plakatvorlage
-  status                CampaignStatus @default(backlog)
+  status                CampaignStatus    @default(backlog)
   notes                 String?
   clientId              String?
-  client                Client?        @relation(fields: [clientId], references: [id])
+  client                Client?           @relation(fields: [clientId], references: [id])
+  distributionListId    String?           @unique // Referenz zur ursprünglichen Verteilerliste
+  distributionList      DistributionList? @relation(fields: [distributionListId], references: [id])
   permits               Permit[]
   routes                Route[]
   planItems             PlanItem[]
@@ -72,25 +83,61 @@ model Campaign {
   reminders             Reminder[]
   googlePhotosAlbumId   String?
   googlePhotosShareLink String?
-  createdAt             DateTime       @default(now())
-  updatedAt             DateTime       @updatedAt
+  createdAt             DateTime          @default(now())
+  updatedAt             DateTime          @updatedAt
+}
+
+model DistributionList {
+  id           String                 @id @default(cuid())
+  eventName    String
+  eventAddress String
+  eventDate    DateTime?
+  startDate    DateTime // Kampagnen-Zeitraum Start
+  endDate      DateTime // Kampagnen-Zeitraum Ende
+  clientId     String
+  client       Client                 @relation(fields: [clientId], references: [id])
+  status       DistributionListStatus @default(draft)
+  notes        String?
+  items        DistributionListItem[]
+  campaign     Campaign? // Wird gesetzt wenn in Kampagne umgewandelt
+  pdfUrl       String? // Link zum generierten PDF
+  createdAt    DateTime               @default(now())
+  updatedAt    DateTime               @updatedAt
+  sentAt       DateTime? // Wann an Kunde versendet
+  acceptedAt   DateTime? // Wann vom Kunden angenommen
+}
+
+model DistributionListItem {
+  id                 String           @id @default(cuid())
+  distributionListId String
+  distributionList   DistributionList @relation(fields: [distributionListId], references: [id], onDelete: Cascade)
+  cityId             String
+  city               City             @relation(fields: [cityId], references: [id])
+  quantity           Int // Anzahl Plakate
+  posterSize         String // Größe (A1, A0, etc.)
+  distanceKm         Float? // Entfernung zum Eventort
+  fee                Float? // Gebühr (kopiert von City oder custom)
+  createdAt          DateTime         @default(now())
+  updatedAt          DateTime         @updatedAt
 }
 
 model City {
-  id         String      @id @default(cuid())
-  name       String
-  email      String?
-  feeModel   String? // pauschal / proPlakat / proZeitraum
-  fee        Float?
-  maxQty     Int?
-  maxSize    String? // A1/A0
-  placeId    String? // Google Place ID
-  lat        Float?
-  lng        Float?
-  permits    Permit[]
-  routeStops RouteStop[]
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
+  id                   String                 @id @default(cuid())
+  name                 String
+  postalCode           String? // PLZ
+  email                String?
+  feeModel             String? // pauschal / proPlakat / proZeitraum
+  fee                  Float?
+  maxQty               Int?
+  maxSize              String? // A1/A0
+  placeId              String? // Google Place ID
+  lat                  Float?
+  lng                  Float?
+  permits              Permit[]
+  routeStops           RouteStop[]
+  distributionListItems DistributionListItem[]
+  createdAt            DateTime               @default(now())
+  updatedAt            DateTime               @updatedAt
 }
 
 model Permit {
