@@ -8,7 +8,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
   return (
     <div className="min-h-screen bg-gray-50">
       <Sidebar />
-      <main className="ml-64 min-h-screen">
+      <main style={{ marginLeft: '256px' }} className="min-h-screen">
         {children}
       </main>
     </div>

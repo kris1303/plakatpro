@@ -16,7 +16,7 @@ export default function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="w-64 bg-white border-r border-gray-200 fixed left-0 top-0 bottom-0 flex flex-col z-10">
+    <aside style={{ width: '256px' }} className="bg-white border-r border-gray-200 fixed left-0 top-0 bottom-0 flex flex-col z-10">
       {/* Logo */}
       <div className="p-6 border-b border-gray-200">
         <Link href="/dashboard" className="flex items-center gap-3">
