@@ -29,51 +29,53 @@ export default async function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen p-6">
-      <div className="max-w-[2000px] mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-brand-yellow mb-2">
-            📊 Dashboard
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="bg-white border-b border-gray-200 px-6 py-4">
+        <div className="max-w-[2000px] mx-auto">
+          <h1 className="text-2xl font-bold text-gray-800 mb-1">
+            📊 PlakatPro Dashboard
           </h1>
-          <p className="text-gray-400">
-            Kampagnenübersicht & Kanban-Board
+          <p className="text-gray-600 text-sm">
+            Kampagnenübersicht & Workflow-Management
           </p>
         </div>
+      </div>
 
+      <div className="max-w-[2000px] mx-auto p-6">
         {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
           <div className="card">
-            <div className="text-sm text-gray-400 mb-1">Kampagnen gesamt</div>
-            <div className="text-3xl font-bold text-brand-yellow">
+            <div className="text-sm text-gray-500 mb-1">Kampagnen gesamt</div>
+            <div className="text-3xl font-bold text-gray-800">
               {stats.totalCampaigns}
             </div>
           </div>
           
           <div className="card">
-            <div className="text-sm text-gray-400 mb-1">Aktive Kampagnen</div>
-            <div className="text-3xl font-bold text-green-500">
+            <div className="text-sm text-gray-500 mb-1">Aktive Kampagnen</div>
+            <div className="text-3xl font-bold text-green-600">
               {stats.activeCampaigns}
             </div>
           </div>
           
           <div className="card">
-            <div className="text-sm text-gray-400 mb-1">Genehmigungen</div>
-            <div className="text-3xl font-bold text-blue-500">
+            <div className="text-sm text-gray-500 mb-1">Genehmigungen</div>
+            <div className="text-3xl font-bold text-blue-600">
               {stats.totalPermits}
             </div>
           </div>
           
           <div className="card">
-            <div className="text-sm text-gray-400 mb-1">Fotos gesamt</div>
-            <div className="text-3xl font-bold text-purple-500">
+            <div className="text-sm text-gray-500 mb-1">Fotos gesamt</div>
+            <div className="text-3xl font-bold text-purple-600">
               {stats.totalPhotos}
             </div>
           </div>
         </div>
 
         {/* Quick Actions */}
-        <div className="flex gap-4 mb-8">
+        <div className="flex gap-3 mb-6">
           <Link href="/campaigns/new" className="btn-primary">
             ➕ Neue Kampagne
           </Link>
@@ -86,9 +88,9 @@ export default async function DashboardPage() {
         </div>
 
         {/* Kanban Board */}
-        <div className="bg-zinc-900/30 rounded-lg p-6">
-          <h2 className="text-2xl font-bold mb-4 text-brand-yellow">
-            Kanban Board
+        <div>
+          <h2 className="text-lg font-semibold mb-4 text-gray-700">
+            Workflow Board
           </h2>
           <KanbanBoard campaigns={campaigns} />
         </div>
