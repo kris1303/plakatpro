@@ -25,9 +25,9 @@ export default function NewPermitPage() {
   const [loading, setLoading] = useState(false);
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [cities, setCities] = useState<City[]>([]);
+  const [selectedCityIds, setSelectedCityIds] = useState<string[]>([]);
   const [formData, setFormData] = useState({
     campaignId: "",
-    cityId: "",
     notes: "",
   });
 
@@ -54,36 +54,61 @@ export default function NewPermitPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!formData.campaignId || !formData.cityId) {
-      alert("Bitte wähle eine Kampagne und eine Kommune aus");
+    if (!formData.campaignId || selectedCityIds.length === 0) {
+      alert("Bitte wähle eine Kampagne und mindestens eine Kommune aus");
       return;
     }
 
     setLoading(true);
 
     try {
-      const response = await fetch("/api/permits", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+      // Erstelle Genehmigung für jede ausgewählte Kommune
+      const promises = selectedCityIds.map((cityId) =>
+        fetch("/api/permits", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            campaignId: formData.campaignId,
+            cityId,
+            notes: formData.notes,
+          }),
+        })
+      );
 
-      if (!response.ok) {
-        throw new Error("Fehler beim Erstellen der Genehmigung");
+      const responses = await Promise.all(promises);
+      
+      const failedCount = responses.filter((r) => !r.ok).length;
+      
+      if (failedCount > 0) {
+        alert(`${failedCount} von ${selectedCityIds.length} Genehmigungen konnten nicht erstellt werden`);
       }
 
       router.push("/permits");
     } catch (error) {
       console.error("Error:", error);
-      alert("Fehler beim Erstellen der Genehmigung");
+      alert("Fehler beim Erstellen der Genehmigungen");
     } finally {
       setLoading(false);
     }
   };
 
-  const selectedCity = cities.find((c) => c.id === formData.cityId);
+  const toggleCity = (cityId: string) => {
+    setSelectedCityIds((prev) =>
+      prev.includes(cityId)
+        ? prev.filter((id) => id !== cityId)
+        : [...prev, cityId]
+    );
+  };
+
+  const selectAllCities = () => {
+    setSelectedCityIds(cities.map((c) => c.id));
+  };
+
+  const deselectAllCities = () => {
+    setSelectedCityIds([]);
+  };
 
   return (
     <AppLayout>
@@ -128,55 +153,80 @@ export default function NewPermitPage() {
             )}
           </div>
 
-          {/* Kommune auswählen */}
+          {/* Kommunen auswählen (Mehrfachauswahl) */}
           <div className="card">
-            <h2 className="text-lg font-semibold mb-4 text-gray-800">
-              Kommune auswählen *
-            </h2>
-
-            <select
-              value={formData.cityId}
-              onChange={(e) => setFormData({ ...formData, cityId: e.target.value })}
-              required
-              className="input w-full"
-            >
-              <option value="">-- Bitte wählen --</option>
-              {cities.map((city) => (
-                <option key={city.id} value={city.id}>
-                  {city.name}
-                  {city.fee && ` - ${city.fee.toFixed(2)} € (${city.feeModel})`}
-                </option>
-              ))}
-            </select>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-semibold text-gray-800">
+                Kommunen auswählen * ({selectedCityIds.length} ausgewählt)
+              </h2>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={selectAllCities}
+                  className="btn-ghost text-xs px-3 py-1"
+                >
+                  Alle auswählen
+                </button>
+                <button
+                  type="button"
+                  onClick={deselectAllCities}
+                  className="btn-ghost text-xs px-3 py-1"
+                >
+                  Alle abwählen
+                </button>
+              </div>
+            </div>
 
             {cities.length === 0 && (
-              <p className="text-sm text-amber-600 mt-2">
-                ⚠️ Keine Kommunen angelegt. Erstelle zuerst Kommunen über Prisma Studio!
+              <p className="text-sm text-amber-600 p-4 bg-amber-50 rounded-lg">
+                ⚠️ Keine Kommunen angelegt. Legen Sie zuerst Kommunen an!
               </p>
             )}
 
-            {/* Stadt-Infos anzeigen */}
-            {selectedCity && (
-              <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                <h3 className="font-semibold text-gray-800 mb-2">
-                  📍 {selectedCity.name}
-                </h3>
-                <div className="space-y-1 text-sm text-gray-700">
-                  {selectedCity.feeModel && (
-                    <p>💰 Gebührenmodell: <span className="font-medium">{selectedCity.feeModel}</span></p>
-                  )}
-                  {selectedCity.fee && (
-                    <p>💵 Gebühr: <span className="font-medium">{selectedCity.fee.toFixed(2)} €</span></p>
-                  )}
-                  {selectedCity.maxQty && (
-                    <p>🔢 Max. Anzahl: <span className="font-medium">{selectedCity.maxQty} Plakate</span></p>
-                  )}
-                  {selectedCity.maxSize && (
-                    <p>📐 Max. Größe: <span className="font-medium">{selectedCity.maxSize}</span></p>
-                  )}
-                </div>
-              </div>
-            )}
+            {/* Kommunen-Liste mit Checkboxen */}
+            <div className="space-y-2 max-h-96 overflow-y-auto">
+              {cities.map((city) => {
+                const isSelected = selectedCityIds.includes(city.id);
+                
+                return (
+                  <label
+                    key={city.id}
+                    className={`flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${
+                      isSelected
+                        ? "bg-blue-50 border-blue-300"
+                        : "bg-white border-gray-200 hover:border-gray-300"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isSelected}
+                      onChange={() => toggleCity(city.id)}
+                      className="mt-1 w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-2 focus:ring-blue-500"
+                    />
+                    
+                    <div className="flex-1">
+                      <div className="font-semibold text-gray-900 mb-1">
+                        {city.name}
+                      </div>
+                      <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-600">
+                        {city.feeModel && (
+                          <span>💰 {city.feeModel}</span>
+                        )}
+                        {city.fee && (
+                          <span className="font-medium">💵 {city.fee.toFixed(2)} €</span>
+                        )}
+                        {city.maxQty && (
+                          <span>🔢 Max. {city.maxQty} Plakate</span>
+                        )}
+                        {city.maxSize && (
+                          <span>📐 {city.maxSize}</span>
+                        )}
+                      </div>
+                    </div>
+                  </label>
+                );
+              })}
+            </div>
           </div>
 
           {/* Notizen */}
@@ -209,10 +259,13 @@ export default function NewPermitPage() {
           <div className="flex items-center gap-3 pt-2">
             <button
               type="submit"
-              disabled={loading || campaigns.length === 0 || cities.length === 0}
+              disabled={loading || campaigns.length === 0 || selectedCityIds.length === 0}
               className="btn-primary disabled:opacity-50"
             >
-              {loading ? "Wird beantragt..." : "Genehmigung beantragen"}
+              {loading 
+                ? `Erstelle ${selectedCityIds.length} Genehmigung(en)...` 
+                : `${selectedCityIds.length} Genehmigung(en) beantragen`
+              }
             </button>
             <button
               type="button"
