@@ -74,6 +74,8 @@ export default async function PermitsPage() {
         <div className="space-y-4">
           {permits.map((permit) => {
             const statusConfig = {
+              draft: { bg: "bg-gray-50", border: "border-gray-200", text: "text-gray-700", label: "Entwurf" },
+              sent: { bg: "bg-blue-50", border: "border-blue-200", text: "text-blue-700", label: "Versendet" },
               requested: { bg: "bg-blue-50", border: "border-blue-200", text: "text-blue-700", label: "Beantragt" },
               info_needed: { bg: "bg-amber-50", border: "border-amber-200", text: "text-amber-700", label: "Info nötig" },
               approved: { bg: "bg-green-50", border: "border-green-200", text: "text-green-700", label: "Genehmigt" },
@@ -81,7 +83,7 @@ export default async function PermitsPage() {
               rejected: { bg: "bg-red-50", border: "border-red-200", text: "text-red-700", label: "Abgelehnt" },
             };
 
-            const config = statusConfig[permit.status];
+            const config = statusConfig[permit.status as keyof typeof statusConfig];
 
             return (
               <div key={permit.id} className="card card-hover transition-all">
