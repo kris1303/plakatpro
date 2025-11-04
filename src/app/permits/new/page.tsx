@@ -8,7 +8,9 @@ import Link from "next/link";
 interface Campaign {
   id: string;
   eventName: string;
-  title: string;
+  eventAddress: string | null;
+  startDate: string;
+  endDate: string;
 }
 
 interface City {
@@ -41,7 +43,17 @@ export default function NewPermitPage() {
       // Kampagnen laden
       const campaignsRes = await fetch("/api/campaigns");
       const campaignsData = await campaignsRes.json();
-      setCampaigns(campaignsData);
+      
+      // Nur zukünftige Kampagnen (endDate >= heute)
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const futureCampaigns = campaignsData.filter((campaign: Campaign) => {
+        const endDate = new Date(campaign.endDate);
+        return endDate >= today;
+      });
+      
+      setCampaigns(futureCampaigns);
 
       // Kommunen laden
       const citiesRes = await fetch("/api/cities");
