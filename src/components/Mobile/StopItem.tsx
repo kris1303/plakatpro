@@ -31,16 +31,16 @@ export default function StopItem({ stop, index, onNavigate }: StopItemProps) {
     <div className="card">
       <div className="flex items-start justify-between mb-3">
         <div className="flex items-start gap-3">
-          <div className="w-8 h-8 rounded-full bg-brand-yellow text-brand-black flex items-center justify-center font-bold">
+          <div className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center font-bold text-sm">
             {index + 1}
           </div>
           
           <div>
-            <h3 className="font-bold text-brand-yellow">
+            <h3 className="font-bold text-gray-800">
               {stop.city?.name || "Stopp"}
             </h3>
             {stop.notes && (
-              <p className="text-sm text-gray-400 mt-1">{stop.notes}</p>
+              <p className="text-sm text-gray-500 mt-1">{stop.notes}</p>
             )}
           </div>
         </div>
@@ -50,22 +50,22 @@ export default function StopItem({ stop, index, onNavigate }: StopItemProps) {
             onClick={onNavigate}
             className="btn-primary text-sm px-3 py-1"
           >
-            🧭 Navigieren
+            🧭 Nav
           </button>
         )}
       </div>
 
       {/* Fortschrittsbalken */}
       <div className="mb-3">
-        <div className="flex justify-between text-xs mb-1">
+        <div className="flex justify-between text-xs mb-1 text-gray-600">
           <span>
             {totalHung} / {totalPlanned} Plakate
           </span>
-          <span>{Math.round(progress)}%</span>
+          <span className="font-semibold">{Math.round(progress)}%</span>
         </div>
-        <div className="w-full bg-zinc-800 rounded-full h-2">
+        <div className="w-full bg-gray-200 rounded-full h-2">
           <div
-            className="bg-brand-yellow h-2 rounded-full transition-all"
+            className="bg-green-500 h-2 rounded-full transition-all"
             style={{ width: `${progress}%` }}
           />
         </div>
@@ -81,24 +81,24 @@ export default function StopItem({ stop, index, onNavigate }: StopItemProps) {
           return (
             <div
               key={planItem.id}
-              className="bg-zinc-800 rounded p-2 text-sm"
+              className="bg-gray-50 border border-gray-200 rounded p-3 text-sm"
             >
               <div className="flex justify-between items-center">
                 <div>
-                  <span className="font-bold text-brand-yellow">
+                  <span className="font-semibold text-gray-800">
                     {planItem.campaign.eventName}
                   </span>
-                  <span className="text-gray-400 ml-2">
+                  <span className="text-gray-500 ml-2">
                     {planItem.format.name}
                   </span>
                 </div>
                 <span
-                  className={`px-2 py-1 rounded text-xs ${
+                  className={`px-2 py-1 rounded text-xs font-semibold ${
                     hung === planItem.plannedQty
-                      ? "bg-green-600"
+                      ? "bg-green-100 text-green-700 border border-green-200"
                       : hung > 0
-                      ? "bg-yellow-600"
-                      : "bg-gray-600"
+                      ? "bg-amber-100 text-amber-700 border border-amber-200"
+                      : "bg-gray-100 text-gray-600 border border-gray-200"
                   }`}
                 >
                   {hung}/{planItem.plannedQty}
