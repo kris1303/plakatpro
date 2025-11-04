@@ -55,9 +55,9 @@ export default async function CampaignsPage() {
                 className="card card-hover"
               >
                 <div className="flex items-start justify-between mb-3">
-                  <h3 className="font-semibold text-gray-900 text-lg">
-                    {campaign.eventName}
-                  </h3>
+                <h3 className="font-semibold text-gray-900 text-lg">
+                  {campaign.eventName}
+                </h3>
                   {isActive && (
                     <span className="badge badge-green">
                       Aktiv
@@ -65,9 +65,11 @@ export default async function CampaignsPage() {
                   )}
                 </div>
 
-                <p className="text-sm text-gray-600 mb-4">
-                  {campaign.title}
-                </p>
+                {campaign.eventAddress && (
+                  <p className="text-sm text-gray-600 mb-4">
+                    📍 {campaign.eventAddress}
+                  </p>
+                )}
 
                 {campaign.client && (
                   <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">

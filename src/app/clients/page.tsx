@@ -28,6 +28,9 @@ export default async function ClientsPage() {
               Verwaltung aller Kunden und Auftraggeber
             </p>
           </div>
+          <Link href="/clients/new" className="btn-primary">
+            ➕ Neuen Kunden anlegen
+          </Link>
         </div>
       </div>
 

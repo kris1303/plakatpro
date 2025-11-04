@@ -47,16 +47,16 @@ export async function POST(req: NextRequest) {
   try {
     const data = await req.json();
     const {
-      title,
       eventName,
-      locationName,
+      eventAddress,
+      eventDate,
       startDate,
       endDate,
       clientId,
       notes,
     } = data;
 
-    if (!title || !eventName || !startDate || !endDate) {
+    if (!eventName || !eventAddress || !startDate || !endDate) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
@@ -65,12 +65,12 @@ export async function POST(req: NextRequest) {
 
     const campaign = await prisma.campaign.create({
       data: {
-        title,
         eventName,
-        locationName,
+        eventAddress,
+        eventDate: eventDate ? new Date(eventDate) : null,
         startDate: new Date(startDate),
         endDate: new Date(endDate),
-        clientId,
+        clientId: clientId || null,
         notes,
         status: "backlog",
       },

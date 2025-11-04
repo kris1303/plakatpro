@@ -44,9 +44,11 @@ function CampaignCard({ campaign, onDragStart }: CampaignCardProps) {
         <h3 className="font-semibold text-gray-900 text-sm mb-1 group-hover:text-blue-600 transition-colors">
           {campaign.eventName}
         </h3>
-        <p className="text-xs text-gray-500">
-          {campaign.title}
-        </p>
+        {campaign.eventAddress && (
+          <p className="text-xs text-gray-500">
+            📍 {campaign.eventAddress}
+          </p>
+        )}
       </div>
       
       {campaign.client && (

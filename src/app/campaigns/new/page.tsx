@@ -1,32 +1,58 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import AppLayout from "@/components/AppLayout";
+
+interface Client {
+  id: string;
+  name: string;
+}
 
 export default function NewCampaignPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [posterFile, setPosterFile] = useState<File | null>(null);
   const [formData, setFormData] = useState({
-    title: "",
     eventName: "",
-    locationName: "",
+    eventAddress: "",
+    eventDate: "",
     startDate: "",
     endDate: "",
+    clientId: "",
     notes: "",
   });
+
+  useEffect(() => {
+    loadClients();
+  }, []);
+
+  const loadClients = async () => {
+    try {
+      const response = await fetch("/api/clients");
+      const data = await response.json();
+      setClients(data);
+    } catch (error) {
+      console.error("Error loading clients:", error);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
 
     try {
+      // Erstelle Kampagne
       const response = await fetch("/api/campaigns", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          clientId: formData.clientId || null,
+        }),
       });
 
       if (!response.ok) {
@@ -34,6 +60,19 @@ export default function NewCampaignPage() {
       }
 
       const campaign = await response.json();
+
+      // Optional: Plakatvorlage hochladen
+      if (posterFile) {
+        const uploadFormData = new FormData();
+        uploadFormData.append("file", posterFile);
+        uploadFormData.append("campaignId", campaign.id);
+
+        await fetch("/api/campaigns/upload-poster", {
+          method: "POST",
+          body: uploadFormData,
+        });
+      }
+
       router.push("/dashboard");
     } catch (error) {
       console.error("Error:", error);
@@ -44,12 +83,19 @@ export default function NewCampaignPage() {
   };
 
   const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
   ) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value,
     });
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setPosterFile(file);
+    }
   };
 
   return (
@@ -68,16 +114,16 @@ export default function NewCampaignPage() {
       <div className="p-8">
         <div className="max-w-3xl">
           <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Basis-Informationen */}
+          {/* Event-Informationen */}
           <div className="card">
             <h2 className="text-base font-semibold mb-6 text-gray-900">
-              Basis-Informationen
+              Event-Informationen
             </h2>
 
             <div className="space-y-5">
               <div>
                 <label className="label">
-                  Event-Name *
+                  Event-Name / Kampagnen-Titel *
                 </label>
                 <input
                   type="text"
@@ -89,48 +135,74 @@ export default function NewCampaignPage() {
                   className="input"
                 />
                 <p className="mt-1.5 text-xs text-gray-500">
-                  Der Name der Veranstaltung oder des Events
+                  Name der Veranstaltung
                 </p>
               </div>
 
               <div>
                 <label className="label">
-                  Kampagnen-Titel *
+                  Adresse der Event-Location *
                 </label>
                 <input
                   type="text"
-                  name="title"
-                  value={formData.title}
+                  name="eventAddress"
+                  value={formData.eventAddress}
                   onChange={handleChange}
                   required
-                  placeholder="z.B. Großes Stadtfest München"
+                  placeholder="z.B. Seestraße 1, 88045 Friedrichshafen"
                   className="input"
                 />
                 <p className="mt-1.5 text-xs text-gray-500">
-                  Beschreibender Titel für die interne Verwaltung
+                  Vollständige Adresse des Veranstaltungsortes
                 </p>
               </div>
 
               <div>
                 <label className="label">
-                  Ort
+                  Event-Datum
                 </label>
                 <input
-                  type="text"
-                  name="locationName"
-                  value={formData.locationName}
+                  type="date"
+                  name="eventDate"
+                  value={formData.eventDate}
                   onChange={handleChange}
-                  placeholder="z.B. München"
                   className="input"
                 />
+                <p className="mt-1.5 text-xs text-gray-500">
+                  Datum der Veranstaltung (optional)
+                </p>
+              </div>
+
+              <div>
+                <label className="label">
+                  Kunde
+                </label>
+                <select
+                  name="clientId"
+                  value={formData.clientId}
+                  onChange={handleChange}
+                  className="input"
+                >
+                  <option value="">-- Kein Kunde ausgewählt --</option>
+                  {clients.map((client) => (
+                    <option key={client.id} value={client.id}>
+                      {client.name}
+                    </option>
+                  ))}
+                </select>
+                {clients.length === 0 && (
+                  <p className="mt-1.5 text-xs text-amber-600">
+                    ⚠️ Keine Kunden vorhanden. Legen Sie zuerst Kunden an.
+                  </p>
+                )}
               </div>
             </div>
           </div>
 
-          {/* Zeitraum */}
+          {/* Werbezeitraum */}
           <div className="card">
             <h2 className="text-base font-semibold mb-6 text-gray-900">
-              Kampagnen-Zeitraum
+              Werbezeitraum (Kampagnen-Zeitraum)
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -146,6 +218,9 @@ export default function NewCampaignPage() {
                   required
                   className="input"
                 />
+                <p className="mt-1.5 text-xs text-gray-500">
+                  Ab wann sollen Plakate hängen
+                </p>
               </div>
 
               <div>
@@ -160,7 +235,41 @@ export default function NewCampaignPage() {
                   required
                   className="input"
                 />
+                <p className="mt-1.5 text-xs text-gray-500">
+                  Bis wann sollen Plakate hängen
+                </p>
               </div>
+            </div>
+          </div>
+
+          {/* Plakatvorlage */}
+          <div className="card">
+            <h2 className="text-base font-semibold mb-6 text-gray-900">
+              Plakatvorlage
+            </h2>
+
+            <div>
+              <label className="label">
+                Plakatvorlage hochladen
+              </label>
+              <input
+                type="file"
+                accept=".pdf,.jpg,.jpeg,.png,.ai,.psd"
+                onChange={handleFileChange}
+                className="input cursor-pointer"
+              />
+              <p className="mt-1.5 text-xs text-gray-500">
+                Akzeptiert: PDF, JPG, PNG, AI, PSD (max. 25MB)
+              </p>
+              {posterFile && (
+                <div className="mt-2 flex items-center gap-2 text-sm text-green-600">
+                  <span>✓</span>
+                  <span>{posterFile.name}</span>
+                  <span className="text-gray-500">
+                    ({(posterFile.size / 1024 / 1024).toFixed(2)} MB)
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
