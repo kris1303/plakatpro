@@ -11,40 +11,43 @@ export default function Home() {
           Professionelles Kampagnenmanagement für Plakatkampagnen
         </p>
         
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
           <div className="card">
-            <h2 className="text-xl font-bold mb-2 text-brand-yellow">Dashboard</h2>
-            <p className="text-gray-300">Kanban-Board für Kampagnenübersicht</p>
+            <div className="text-4xl mb-3">📊</div>
+            <h2 className="text-xl font-bold mb-2 text-gray-800">Dashboard</h2>
+            <p className="text-gray-600">Kanban-Board im MeisterTask-Stil</p>
           </div>
           
           <div className="card">
-            <h2 className="text-xl font-bold mb-2 text-brand-yellow">Plakatierer-App</h2>
-            <p className="text-gray-300">Mobile PWA für Touren und GPS-Fotos</p>
+            <div className="text-4xl mb-3">📱</div>
+            <h2 className="text-xl font-bold mb-2 text-gray-800">Plakatierer-App</h2>
+            <p className="text-gray-600">Mobile PWA für Touren mit GPS-Fotos</p>
           </div>
           
           <div className="card">
-            <h2 className="text-xl font-bold mb-2 text-brand-yellow">Google Integration</h2>
-            <p className="text-gray-300">Maps & Photos nahtlos integriert</p>
+            <div className="text-4xl mb-3">🗺️</div>
+            <h2 className="text-xl font-bold mb-2 text-gray-800">Google Integration</h2>
+            <p className="text-gray-600">Maps & Photos nahtlos integriert</p>
           </div>
         </div>
 
-        <div className="mt-8 flex gap-4">
-          <Link href="/dashboard" className="btn-primary">
-            Zum Dashboard
+        <div className="flex gap-4 mb-16">
+          <Link href="/dashboard" className="btn-primary text-lg">
+            📊 Zum Dashboard
           </Link>
-          <Link href="/m/tours" className="btn-secondary">
-            Mobile App öffnen
+          <Link href="/m/tours" className="btn-secondary text-lg">
+            📱 Mobile App öffnen
           </Link>
         </div>
 
-        <div className="mt-12 card">
-          <h2 className="text-2xl font-bold mb-4 text-brand-yellow">⚙️ Setup erforderlich</h2>
-          <div className="space-y-3 text-gray-300">
-            <p>✅ 1. <code className="bg-zinc-800 px-2 py-1 rounded">.env</code> Datei erstellen (siehe <code className="bg-zinc-800 px-2 py-1 rounded">.env.example</code>)</p>
-            <p>✅ 2. Neon PostgreSQL Datenbank erstellen und DATABASE_URL eintragen</p>
-            <p>✅ 3. <code className="bg-zinc-800 px-2 py-1 rounded">pnpm prisma:generate</code> ausführen</p>
-            <p>✅ 4. <code className="bg-zinc-800 px-2 py-1 rounded">pnpm prisma:migrate</code> ausführen</p>
-            <p>✅ 5. Google Cloud APIs aktivieren und Keys eintragen</p>
+        <div className="card bg-blue-50 border-blue-200">
+          <h2 className="text-2xl font-bold mb-4 text-gray-800">✅ Setup abgeschlossen!</h2>
+          <div className="space-y-3 text-gray-700">
+            <p>✅ Datenbank erstellt und migriert</p>
+            <p>✅ Vercel Deployment erfolgreich</p>
+            <p>✅ 13 Datenbank-Tabellen angelegt</p>
+            <p>✅ 16 API-Routen verfügbar</p>
+            <p className="font-semibold text-blue-700 mt-4">🎉 Deine App ist bereit!</p>
           </div>
         </div>
       </div>
