@@ -276,7 +276,7 @@ export async function GET(
     // PDF als Buffer generieren
     return new Promise<NextResponse>((resolve, reject) => {
       pdfDoc.getBuffer((buffer: Buffer) => {
-        const response = new NextResponse(buffer, {
+        const response = new NextResponse(buffer as any, {
           headers: {
             "Content-Type": "application/pdf",
             "Content-Disposition": `attachment; filename="Verteilerliste_${distributionList.eventName.replace(/[^a-zA-Z0-9]/g, "_")}_${new Date().toISOString().split("T")[0]}.pdf"`,
