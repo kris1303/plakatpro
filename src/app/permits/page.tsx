@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import AppLayout from "@/components/AppLayout";
 import Link from "next/link";
 import { formatDate } from "@/lib/utils";
 
@@ -22,63 +23,55 @@ export default async function PermitsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <AppLayout>
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="max-w-7xl mx-auto">
-          <Link href="/dashboard" className="text-blue-600 hover:text-blue-700 mb-2 inline-block">
-            ← Zurück zum Dashboard
+      <div className="bg-white border-b border-gray-200 px-8 py-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-1">
+              Genehmigungen
+            </h1>
+            <p className="text-sm text-gray-600">
+              Übersicht aller Plakat-Genehmigungen bei Kommunen
+            </p>
+          </div>
+          <Link href="/permits/new" className="btn-primary">
+            ➕ Genehmigung beantragen
           </Link>
-          <h1 className="text-2xl font-bold text-gray-800 mb-1">
-            📋 Genehmigungen
-          </h1>
-          <p className="text-gray-600 text-sm">
-            Übersicht aller Plakat-Genehmigungen
-          </p>
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto p-6">
+      <div className="p-8">
         {/* Stats */}
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-8">
           <div className="card text-center">
-            <div className="text-2xl font-bold text-gray-800">{stats.total}</div>
-            <div className="text-sm text-gray-500">Gesamt</div>
+            <div className="text-2xl font-bold text-gray-900 mb-1">{stats.total}</div>
+            <div className="text-xs font-medium text-gray-600">Gesamt</div>
           </div>
           
           <div className="card text-center bg-blue-50 border-blue-200">
-            <div className="text-2xl font-bold text-blue-600">{stats.requested}</div>
-            <div className="text-sm text-gray-600">Beantragt</div>
+            <div className="text-2xl font-bold text-blue-600 mb-1">{stats.requested}</div>
+            <div className="text-xs font-medium text-blue-700">Beantragt</div>
           </div>
           
           <div className="card text-center bg-amber-50 border-amber-200">
-            <div className="text-2xl font-bold text-amber-600">{stats.pending}</div>
-            <div className="text-sm text-gray-600">Info nötig</div>
+            <div className="text-2xl font-bold text-amber-600 mb-1">{stats.pending}</div>
+            <div className="text-xs font-medium text-amber-700">Info nötig</div>
           </div>
           
           <div className="card text-center bg-green-50 border-green-200">
-            <div className="text-2xl font-bold text-green-600">{stats.approved}</div>
-            <div className="text-sm text-gray-600">Genehmigt</div>
+            <div className="text-2xl font-bold text-green-600 mb-1">{stats.approved}</div>
+            <div className="text-xs font-medium text-green-700">Genehmigt</div>
           </div>
           
           <div className="card text-center bg-red-50 border-red-200">
-            <div className="text-2xl font-bold text-red-600">{stats.rejected}</div>
-            <div className="text-sm text-gray-600">Abgelehnt</div>
+            <div className="text-2xl font-bold text-red-600 mb-1">{stats.rejected}</div>
+            <div className="text-xs font-medium text-red-700">Abgelehnt</div>
           </div>
         </div>
 
-        {/* Actions */}
-        <div className="flex gap-3 mb-6">
-          <Link href="/permits/new" className="btn-primary">
-            ➕ Neue Genehmigung beantragen
-          </Link>
-          <button className="btn-secondary">
-            📧 E-Mails nachhaken
-          </button>
-        </div>
-
         {/* Permits Liste */}
-        <div className="space-y-3">
+        <div className="space-y-4">
           {permits.map((permit) => {
             const statusConfig = {
               requested: { bg: "bg-blue-50", border: "border-blue-200", text: "text-blue-700", label: "Beantragt" },
@@ -91,35 +84,44 @@ export default async function PermitsPage() {
             const config = statusConfig[permit.status];
 
             return (
-              <div key={permit.id} className="card hover:shadow-md transition-all">
-                <div className="flex items-start justify-between mb-3">
+              <div key={permit.id} className="card card-hover transition-all">
+                <div className="flex items-start justify-between gap-6">
                   <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="font-semibold text-gray-800">
+                    <div className="flex items-center gap-3 mb-3">
+                      <h3 className="font-semibold text-gray-900 text-base">
                         {permit.city.name}
                       </h3>
-                      <span className={`px-3 py-1 rounded-full text-xs font-semibold ${config.bg} ${config.text} ${config.border} border`}>
+                      <span className={`badge ${config.bg} ${config.text} ${config.border} border`}>
                         {config.label}
                       </span>
                     </div>
                     
-                    <p className="text-sm text-gray-600 mb-2">
-                      Kampagne: <span className="font-medium">{permit.campaign.eventName}</span>
+                    <p className="text-sm text-gray-700 mb-3">
+                      {permit.campaign.eventName}
                     </p>
 
-                    <div className="flex gap-4 text-xs text-gray-500">
-                      <span>📅 Beantragt: {formatDate(permit.requestedAt)}</span>
+                    <div className="flex flex-wrap gap-x-4 gap-y-2 text-xs text-gray-600">
+                      <span className="flex items-center gap-1">
+                        <span className="text-gray-400">📅</span>
+                        Beantragt: {formatDate(permit.requestedAt)}
+                      </span>
                       {permit.decidedAt && (
-                        <span>✓ Entschieden: {formatDate(permit.decidedAt)}</span>
+                        <span className="flex items-center gap-1">
+                          <span className="text-gray-400">✓</span>
+                          Entschieden: {formatDate(permit.decidedAt)}
+                        </span>
                       )}
                       {permit.fee && (
-                        <span>💰 Gebühr: {permit.fee.toFixed(2)} €</span>
+                        <span className="flex items-center gap-1 font-medium text-gray-700">
+                          <span className="text-gray-400">💰</span>
+                          {permit.fee.toFixed(2)} €
+                        </span>
                       )}
                     </div>
 
                     {permit.notes && (
-                      <p className="text-sm text-gray-600 mt-2 p-2 bg-gray-50 rounded border border-gray-200">
-                        📝 {permit.notes}
+                      <p className="text-sm text-gray-700 mt-3 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                        {permit.notes}
                       </p>
                     )}
                   </div>
@@ -127,9 +129,9 @@ export default async function PermitsPage() {
                   {permit.city.email && (
                     <a
                       href={`mailto:${permit.city.email}`}
-                      className="btn-secondary text-sm px-3 py-1"
+                      className="btn-secondary flex-shrink-0"
                     >
-                      📧 Kontakt
+                      📧 E-Mail
                     </a>
                   )}
                 </div>
@@ -138,17 +140,22 @@ export default async function PermitsPage() {
           })}
 
           {permits.length === 0 && (
-            <div className="text-center py-16 text-gray-400">
-              <p className="text-4xl mb-3">📭</p>
-              <p className="text-lg mb-2">Keine Genehmigungen vorhanden</p>
-              <p className="text-sm text-gray-500">
-                Erstelle eine Kampagne und beantrage Genehmigungen bei den Kommunen
+            <div className="card text-center py-16">
+              <div className="text-5xl mb-4 opacity-30">📭</div>
+              <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                Keine Genehmigungen vorhanden
+              </h3>
+              <p className="text-sm text-gray-500 mb-6">
+                Erstellen Sie eine Kampagne und beantragen Sie Genehmigungen bei den Kommunen
               </p>
+              <Link href="/permits/new" className="btn-primary inline-flex">
+                ➕ Erste Genehmigung beantragen
+              </Link>
             </div>
           )}
         </div>
       </div>
-    </div>
+    </AppLayout>
   );
 }
 

@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import KanbanBoard from "@/components/KanbanBoard";
+import AppLayout from "@/components/AppLayout";
 import Link from "next/link";
 
 export const dynamic = 'force-dynamic';
@@ -29,73 +30,105 @@ export default async function DashboardPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <AppLayout>
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="max-w-[2000px] mx-auto">
-          <h1 className="text-2xl font-bold text-gray-800 mb-1">
-            📊 PlakatPro Dashboard
-          </h1>
-          <p className="text-gray-600 text-sm">
-            Kampagnenübersicht & Workflow-Management
-          </p>
-        </div>
-      </div>
-
-      <div className="max-w-[2000px] mx-auto p-6">
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-          <div className="card">
-            <div className="text-sm text-gray-500 mb-1">Kampagnen gesamt</div>
-            <div className="text-3xl font-bold text-gray-800">
-              {stats.totalCampaigns}
-            </div>
+      <div className="bg-white border-b border-gray-200 px-8 py-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-1">Dashboard</h1>
+            <p className="text-sm text-gray-600">
+              Übersicht aller Kampagnen und Workflows
+            </p>
           </div>
-          
-          <div className="card">
-            <div className="text-sm text-gray-500 mb-1">Aktive Kampagnen</div>
-            <div className="text-3xl font-bold text-green-600">
-              {stats.activeCampaigns}
-            </div>
-          </div>
-          
-          <div className="card">
-            <div className="text-sm text-gray-500 mb-1">Genehmigungen</div>
-            <div className="text-3xl font-bold text-blue-600">
-              {stats.totalPermits}
-            </div>
-          </div>
-          
-          <div className="card">
-            <div className="text-sm text-gray-500 mb-1">Fotos gesamt</div>
-            <div className="text-3xl font-bold text-purple-600">
-              {stats.totalPhotos}
-            </div>
-          </div>
-        </div>
-
-        {/* Quick Actions */}
-        <div className="flex gap-3 mb-6">
           <Link href="/campaigns/new" className="btn-primary">
             ➕ Neue Kampagne
           </Link>
-          <Link href="/m/tours" className="btn-secondary">
-            🚗 Touren verwalten
-          </Link>
-          <Link href="/permits" className="btn-secondary">
-            📋 Genehmigungen
-          </Link>
+        </div>
+      </div>
+
+      {/* Content */}
+      <div className="p-8">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="card">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 mb-1">
+                  Kampagnen gesamt
+                </p>
+                <p className="text-3xl font-bold text-gray-900">
+                  {stats.totalCampaigns}
+                </p>
+              </div>
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                <span className="text-2xl">🎯</span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="card">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 mb-1">
+                  Aktive Kampagnen
+                </p>
+                <p className="text-3xl font-bold text-green-600">
+                  {stats.activeCampaigns}
+                </p>
+              </div>
+              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                <span className="text-2xl">✓</span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="card">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 mb-1">
+                  Genehmigungen
+                </p>
+                <p className="text-3xl font-bold text-blue-600">
+                  {stats.totalPermits}
+                </p>
+              </div>
+              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                <span className="text-2xl">📋</span>
+              </div>
+            </div>
+          </div>
+          
+          <div className="card">
+            <div className="flex items-start justify-between">
+              <div>
+                <p className="text-sm font-medium text-gray-600 mb-1">
+                  Fotos
+                </p>
+                <p className="text-3xl font-bold text-purple-600">
+                  {stats.totalPhotos}
+                </p>
+              </div>
+              <div className="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center">
+                <span className="text-2xl">📸</span>
+              </div>
+            </div>
+          </div>
         </div>
 
         {/* Kanban Board */}
         <div>
-          <h2 className="text-lg font-semibold mb-4 text-gray-700">
-            Workflow Board
-          </h2>
+          <div className="mb-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-1">
+              Workflow Board
+            </h2>
+            <p className="text-sm text-gray-600">
+              Ziehen Sie Kampagnen zwischen den Spalten, um den Status zu ändern
+            </p>
+          </div>
           <KanbanBoard campaigns={campaigns} />
         </div>
       </div>
-    </div>
+    </AppLayout>
   );
 }
 

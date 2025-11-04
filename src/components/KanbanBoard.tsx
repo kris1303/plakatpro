@@ -7,20 +7,21 @@ import { formatDate } from "@/lib/utils";
 type KanbanColumn = {
   id: CampaignStatus;
   title: string;
-  color: string;
+  bgColor: string;
+  textColor: string;
 };
 
 const KANBAN_COLUMNS: KanbanColumn[] = [
-  { id: "backlog", title: "Backlog/Setup", color: "bg-slate-100" },
-  { id: "permits", title: "Genehmigungen", color: "bg-blue-100" },
-  { id: "print", title: "Druck/Material", color: "bg-purple-100" },
-  { id: "planning", title: "Tourplanung", color: "bg-indigo-100" },
-  { id: "hanging", title: "Aushang", color: "bg-amber-100" },
-  { id: "control", title: "Kontrolle", color: "bg-green-100" },
-  { id: "removal_plan", title: "Abhängen - Planung", color: "bg-orange-100" },
-  { id: "removal_live", title: "Abhängen - Live", color: "bg-red-100" },
-  { id: "report", title: "Report", color: "bg-teal-100" },
-  { id: "archive", title: "Archiv", color: "bg-gray-100" },
+  { id: "backlog", title: "Backlog", bgColor: "bg-gray-50", textColor: "text-gray-700" },
+  { id: "permits", title: "Genehmigungen", bgColor: "bg-blue-50", textColor: "text-blue-700" },
+  { id: "print", title: "Druck", bgColor: "bg-purple-50", textColor: "text-purple-700" },
+  { id: "planning", title: "Planung", bgColor: "bg-indigo-50", textColor: "text-indigo-700" },
+  { id: "hanging", title: "Aushang", bgColor: "bg-amber-50", textColor: "text-amber-700" },
+  { id: "control", title: "Kontrolle", bgColor: "bg-green-50", textColor: "text-green-700" },
+  { id: "removal_plan", title: "Abhängen (Plan)", bgColor: "bg-orange-50", textColor: "text-orange-700" },
+  { id: "removal_live", title: "Abhängen (Live)", bgColor: "bg-red-50", textColor: "text-red-700" },
+  { id: "report", title: "Report", bgColor: "bg-teal-50", textColor: "text-teal-700" },
+  { id: "archive", title: "Archiv", bgColor: "bg-gray-100", textColor: "text-gray-600" },
 ];
 
 interface CampaignCardProps {
@@ -32,35 +33,45 @@ interface CampaignCardProps {
 
 function CampaignCard({ campaign }: CampaignCardProps) {
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4 cursor-pointer transition-all hover:shadow-md">
-      <div className="flex items-start justify-between mb-2">
-        <h3 className="font-semibold text-gray-800 text-sm">{campaign.eventName}</h3>
+    <div className="bg-white rounded-lg border border-gray-200 p-4 cursor-pointer transition-all hover:shadow-md hover:border-blue-300 group">
+      <div className="mb-3">
+        <h3 className="font-semibold text-gray-900 text-sm mb-1 group-hover:text-blue-600 transition-colors">
+          {campaign.eventName}
+        </h3>
+        <p className="text-xs text-gray-500">
+          {campaign.title}
+        </p>
+      </div>
+      
+      {campaign.client && (
+        <div className="flex items-center gap-1.5 mb-3 text-xs text-gray-600">
+          <span className="text-gray-400">👤</span>
+          <span>{campaign.client.name}</span>
+        </div>
+      )}
+
+      <div className="flex items-center justify-between pt-3 border-t border-gray-100">
         <span className="text-xs text-gray-500">
           {formatDate(campaign.startDate)}
         </span>
-      </div>
-      
-      <p className="text-sm text-gray-600 mb-3">{campaign.title}</p>
-      
-      {campaign.client && (
-        <p className="text-xs text-gray-500 mb-3">
-          👤 {campaign.client.name}
-        </p>
-      )}
-
-      <div className="flex gap-2 flex-wrap text-xs">
         {campaign._count && (
-          <>
-            <span className="px-2 py-1 bg-blue-50 text-blue-700 rounded">
-              📋 {campaign._count.permits}
-            </span>
-            <span className="px-2 py-1 bg-green-50 text-green-700 rounded">
-              🚗 {campaign._count.routes}
-            </span>
-            <span className="px-2 py-1 bg-purple-50 text-purple-700 rounded">
-              📸 {campaign._count.photos}
-            </span>
-          </>
+          <div className="flex gap-1.5">
+            {campaign._count.permits > 0 && (
+              <span className="badge badge-blue" title="Genehmigungen">
+                {campaign._count.permits}
+              </span>
+            )}
+            {campaign._count.routes > 0 && (
+              <span className="badge badge-green" title="Touren">
+                {campaign._count.routes}
+              </span>
+            )}
+            {campaign._count.photos > 0 && (
+              <span className="badge badge-gray" title="Fotos">
+                {campaign._count.photos}
+              </span>
+            )}
+          </div>
         )}
       </div>
     </div>
@@ -84,7 +95,7 @@ export default function KanbanBoard({ campaigns }: KanbanBoardProps) {
   };
 
   return (
-    <div className="w-full overflow-x-auto pb-4">
+    <div className="w-full overflow-x-auto pb-6">
       <div className="flex gap-4 min-w-max">
         {KANBAN_COLUMNS.map((column) => {
           const columnCampaigns = getCampaignsByColumn(column.id);
@@ -92,25 +103,30 @@ export default function KanbanBoard({ campaigns }: KanbanBoardProps) {
           return (
             <div
               key={column.id}
-              className="w-80 flex-shrink-0"
+              className="w-72 flex-shrink-0"
             >
-              <div
-                className={`${column.color} px-4 py-3 rounded-t-lg font-semibold text-gray-700 flex items-center justify-between border border-b-0 border-gray-200`}
-              >
-                <span className="text-sm">{column.title}</span>
-                <span className="text-xs bg-white/60 px-2 py-0.5 rounded-full font-medium">
-                  {columnCampaigns.length}
-                </span>
+              {/* Column Header */}
+              <div className={`${column.bgColor} px-4 py-3 rounded-t-xl border border-gray-200`}>
+                <div className="flex items-center justify-between">
+                  <h3 className={`font-semibold text-sm ${column.textColor}`}>
+                    {column.title}
+                  </h3>
+                  <span className="inline-flex items-center justify-center min-w-[1.5rem] h-6 px-2 text-xs font-semibold text-gray-600 bg-white rounded-full">
+                    {columnCampaigns.length}
+                  </span>
+                </div>
               </div>
               
-              <div className="bg-gray-50/50 rounded-b-lg border border-gray-200 border-t-0 p-3 min-h-[500px] space-y-3">
+              {/* Column Content */}
+              <div className="bg-gray-50 rounded-b-xl border-x border-b border-gray-200 p-3 min-h-[600px] space-y-3">
                 {columnCampaigns.map((campaign) => (
                   <CampaignCard key={campaign.id} campaign={campaign} />
                 ))}
                 
                 {columnCampaigns.length === 0 && (
-                  <div className="text-center text-gray-400 py-12 text-sm">
-                    Keine Kampagnen
+                  <div className="flex flex-col items-center justify-center py-16 text-gray-400">
+                    <div className="text-3xl mb-2 opacity-30">📭</div>
+                    <p className="text-xs">Keine Kampagnen</p>
                   </div>
                 )}
               </div>

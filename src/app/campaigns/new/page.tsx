@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
+import AppLayout from "@/components/AppLayout";
 
 export default function NewCampaignPage() {
   const router = useRouter();
@@ -53,31 +53,30 @@ export default function NewCampaignPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <AppLayout>
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="max-w-4xl mx-auto">
-          <Link href="/dashboard" className="text-blue-600 hover:text-blue-700 mb-2 inline-block">
-            ← Zurück zum Dashboard
-          </Link>
-          <h1 className="text-2xl font-bold text-gray-800">
-            ➕ Neue Kampagne erstellen
-          </h1>
-        </div>
+      <div className="bg-white border-b border-gray-200 px-8 py-6">
+        <h1 className="text-2xl font-bold text-gray-900 mb-1">
+          Neue Kampagne erstellen
+        </h1>
+        <p className="text-sm text-gray-600">
+          Füllen Sie die Informationen für Ihre neue Plakat-Kampagne aus
+        </p>
       </div>
 
       {/* Form */}
-      <div className="max-w-4xl mx-auto p-6">
-        <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="p-8">
+        <div className="max-w-3xl">
+          <form onSubmit={handleSubmit} className="space-y-6">
           {/* Basis-Informationen */}
           <div className="card">
-            <h2 className="text-lg font-semibold mb-4 text-gray-800">
+            <h2 className="text-base font-semibold mb-6 text-gray-900">
               Basis-Informationen
             </h2>
 
-            <div className="space-y-4">
+            <div className="space-y-5">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="label">
                   Event-Name *
                 </label>
                 <input
@@ -87,12 +86,15 @@ export default function NewCampaignPage() {
                   onChange={handleChange}
                   required
                   placeholder="z.B. Sommerfest 2025"
-                  className="input w-full"
+                  className="input"
                 />
+                <p className="mt-1.5 text-xs text-gray-500">
+                  Der Name der Veranstaltung oder des Events
+                </p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="label">
                   Kampagnen-Titel *
                 </label>
                 <input
@@ -102,12 +104,15 @@ export default function NewCampaignPage() {
                   onChange={handleChange}
                   required
                   placeholder="z.B. Großes Stadtfest München"
-                  className="input w-full"
+                  className="input"
                 />
+                <p className="mt-1.5 text-xs text-gray-500">
+                  Beschreibender Titel für die interne Verwaltung
+                </p>
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="label">
                   Ort
                 </label>
                 <input
@@ -116,7 +121,7 @@ export default function NewCampaignPage() {
                   value={formData.locationName}
                   onChange={handleChange}
                   placeholder="z.B. München"
-                  className="input w-full"
+                  className="input"
                 />
               </div>
             </div>
@@ -124,13 +129,13 @@ export default function NewCampaignPage() {
 
           {/* Zeitraum */}
           <div className="card">
-            <h2 className="text-lg font-semibold mb-4 text-gray-800">
-              Zeitraum
+            <h2 className="text-base font-semibold mb-6 text-gray-900">
+              Kampagnen-Zeitraum
             </h2>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="label">
                   Start-Datum *
                 </label>
                 <input
@@ -139,12 +144,12 @@ export default function NewCampaignPage() {
                   value={formData.startDate}
                   onChange={handleChange}
                   required
-                  className="input w-full"
+                  className="input"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
+                <label className="label">
                   End-Datum *
                 </label>
                 <input
@@ -153,7 +158,7 @@ export default function NewCampaignPage() {
                   value={formData.endDate}
                   onChange={handleChange}
                   required
-                  className="input w-full"
+                  className="input"
                 />
               </div>
             </div>
@@ -161,36 +166,46 @@ export default function NewCampaignPage() {
 
           {/* Notizen */}
           <div className="card">
-            <h2 className="text-lg font-semibold mb-4 text-gray-800">
-              Notizen (optional)
+            <h2 className="text-base font-semibold mb-6 text-gray-900">
+              Zusätzliche Informationen
             </h2>
 
-            <textarea
-              name="notes"
-              value={formData.notes}
-              onChange={handleChange}
-              rows={4}
-              placeholder="Zusätzliche Informationen zur Kampagne..."
-              className="input w-full resize-none"
-            />
+            <div>
+              <label className="label">
+                Notizen
+              </label>
+              <textarea
+                name="notes"
+                value={formData.notes}
+                onChange={handleChange}
+                rows={4}
+                placeholder="Besonderheiten, Anforderungen, Kontaktpersonen..."
+                className="input resize-none"
+              />
+            </div>
           </div>
 
           {/* Actions */}
-          <div className="flex gap-4 justify-end">
-            <Link href="/dashboard" className="btn-secondary">
-              Abbrechen
-            </Link>
+          <div className="flex items-center gap-3 pt-2">
             <button
               type="submit"
               disabled={loading}
               className="btn-primary disabled:opacity-50"
             >
-              {loading ? "Erstelle..." : "Kampagne erstellen"}
+              {loading ? "Wird erstellt..." : "Kampagne erstellen"}
+            </button>
+            <button
+              type="button"
+              onClick={() => router.push("/dashboard")}
+              className="btn-secondary"
+            >
+              Abbrechen
             </button>
           </div>
         </form>
+        </div>
       </div>
-    </div>
+    </AppLayout>
   );
 }
 

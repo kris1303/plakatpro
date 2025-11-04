@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import AppLayout from "@/components/AppLayout";
 import Link from "next/link";
 
 interface Campaign {
@@ -85,22 +86,21 @@ export default function NewPermitPage() {
   const selectedCity = cities.find((c) => c.id === formData.cityId);
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <AppLayout>
       {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="max-w-4xl mx-auto">
-          <Link href="/permits" className="text-blue-600 hover:text-blue-700 mb-2 inline-block">
-            ← Zurück zu Genehmigungen
-          </Link>
-          <h1 className="text-2xl font-bold text-gray-800">
-            ➕ Neue Genehmigung beantragen
-          </h1>
-        </div>
+      <div className="bg-white border-b border-gray-200 px-8 py-6">
+        <h1 className="text-2xl font-bold text-gray-900 mb-1">
+          Genehmigung beantragen
+        </h1>
+        <p className="text-sm text-gray-600">
+          Beantragen Sie eine Plakat-Genehmigung bei einer Kommune
+        </p>
       </div>
 
       {/* Form */}
-      <div className="max-w-4xl mx-auto p-6">
-        <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="p-8">
+        <div className="max-w-3xl">
+          <form onSubmit={handleSubmit} className="space-y-6">
           {/* Kampagne auswählen */}
           <div className="card">
             <h2 className="text-lg font-semibold mb-4 text-gray-800">
