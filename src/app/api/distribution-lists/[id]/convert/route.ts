@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { PermitStatus } from "@prisma/client";
 
 export async function POST(
   request: Request,
@@ -62,7 +63,7 @@ export async function POST(
     const permits = distributionList.items.map((item) => ({
       campaignId: campaign.id,
       cityId: item.cityId,
-      status: "draft",
+      status: PermitStatus.draft,
       quantity: item.quantity,
       posterSize: item.posterSize,
       fee: item.fee || 0,
