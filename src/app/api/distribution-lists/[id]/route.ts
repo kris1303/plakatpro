@@ -3,11 +3,12 @@ import { prisma } from "@/lib/prisma";
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const distributionList = await prisma.distributionList.findUnique({
-      where: { id: params.id },
+      where: { id },
       include: {
         client: true,
         items: {
@@ -43,9 +44,10 @@ export async function GET(
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const { id } = await params;
     const body = await request.json();
     const { status } = body;
 
@@ -60,7 +62,7 @@ export async function PATCH(
     }
 
     const distributionList = await prisma.distributionList.update({
-      where: { id: params.id },
+      where: { id },
       data: updateData,
       include: {
         client: true,
