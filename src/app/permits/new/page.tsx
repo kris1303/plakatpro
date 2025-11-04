@@ -156,15 +156,22 @@ export default function NewPermitPage() {
               <option value="">-- Bitte wählen --</option>
               {campaigns.map((campaign) => (
                 <option key={campaign.id} value={campaign.id}>
-                  {campaign.eventName} - {campaign.title}
+                  {campaign.eventName}
+                  {campaign.eventAddress && ` · ${campaign.eventAddress}`}
+                  {` (${new Date(campaign.startDate).toLocaleDateString("de-DE")} - ${new Date(campaign.endDate).toLocaleDateString("de-DE")})`}
                 </option>
               ))}
             </select>
 
             {campaigns.length === 0 && (
-              <p className="text-sm text-amber-600 mt-2">
-                ⚠️ Keine Kampagnen vorhanden. Erstelle zuerst eine Kampagne!
-              </p>
+              <div className="mt-2 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                <p className="text-sm text-amber-700 font-medium mb-1">
+                  ⚠️ Keine zukünftigen Kampagnen vorhanden
+                </p>
+                <p className="text-xs text-amber-600">
+                  Es werden nur Kampagnen angezeigt, deren End-Datum in der Zukunft liegt.
+                </p>
+              </div>
             )}
           </div>
 
