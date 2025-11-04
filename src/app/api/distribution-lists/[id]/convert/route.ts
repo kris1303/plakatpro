@@ -58,11 +58,11 @@ export async function POST(
       },
     });
 
-    // Genehmigungen für alle Kommunen erstellen
+    // Genehmigungen für alle Kommunen erstellen (Status: draft)
     const permits = distributionList.items.map((item) => ({
       campaignId: campaign.id,
       cityId: item.cityId,
-      status: "draft" as const,
+      status: "draft",
       quantity: item.quantity,
       posterSize: item.posterSize,
       fee: item.fee || 0,

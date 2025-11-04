@@ -9,14 +9,14 @@ export async function POST(
   try {
     const { id: campaignId } = await params;
 
-    // Alle Draft-Permits der Kampagne auf "sent" setzen
+    // Alle Draft-Permits der Kampagne auf "requested" setzen
     const result = await prisma.permit.updateMany({
       where: {
         campaignId: campaignId,
         status: PermitStatus.draft,
       },
       data: {
-        status: PermitStatus.sent,
+        status: PermitStatus.requested,
         requestedAt: new Date(),
       },
     });

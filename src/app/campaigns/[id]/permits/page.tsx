@@ -102,7 +102,7 @@ export default function CampaignPermitsPage() {
   }
 
   const draftPermits = campaign.permits.filter((p) => p.status === "draft");
-  const sentPermits = campaign.permits.filter((p) => p.status === "sent");
+  const requestedPermits = campaign.permits.filter((p) => p.status === "requested");
   const approvedPermits = campaign.permits.filter((p) => p.status === "approved");
 
   return (
@@ -152,7 +152,7 @@ export default function CampaignPermitsPage() {
           </div>
           
           <div className="card text-center bg-blue-50 border-blue-200">
-            <div className="text-2xl font-bold text-blue-600 mb-1">{sentPermits.length}</div>
+            <div className="text-2xl font-bold text-blue-600 mb-1">{requestedPermits.length}</div>
             <div className="text-xs font-medium text-blue-700">Beantragt</div>
           </div>
           
@@ -185,9 +185,11 @@ export default function CampaignPermitsPage() {
                 {campaign.permits.map((permit) => {
                   const statusConfig = {
                     draft: { bg: "bg-gray-100", text: "text-gray-700", label: "Entwurf" },
-                    sent: { bg: "bg-blue-100", text: "text-blue-700", label: "Beantragt" },
+                    requested: { bg: "bg-blue-100", text: "text-blue-700", label: "Beantragt" },
                     approved: { bg: "bg-green-100", text: "text-green-700", label: "Genehmigt" },
                     rejected: { bg: "bg-red-100", text: "text-red-700", label: "Abgelehnt" },
+                    info_needed: { bg: "bg-yellow-100", text: "text-yellow-700", label: "Info benötigt" },
+                    approved_with_conditions: { bg: "bg-green-100", text: "text-green-700", label: "Genehmigt (mit Auflagen)" },
                   };
 
                   const config = statusConfig[permit.status as keyof typeof statusConfig] || statusConfig.draft;
