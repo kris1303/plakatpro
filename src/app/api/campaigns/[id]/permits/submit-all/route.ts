@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { PermitStatus } from "@prisma/client";
 
 export async function POST(
   request: Request,
@@ -12,10 +13,10 @@ export async function POST(
     const result = await prisma.permit.updateMany({
       where: {
         campaignId: campaignId,
-        status: "draft",
+        status: PermitStatus.draft,
       },
       data: {
-        status: "sent",
+        status: PermitStatus.sent,
         requestedAt: new Date(),
       },
     });
@@ -23,7 +24,7 @@ export async function POST(
     // Kampagne-Status auf "permits" setzen (falls noch nicht)
     await prisma.campaign.update({
       where: { id: campaignId },
-      data: { status: "permits" },
+      data: { status: "permits" as any },
     });
 
     return NextResponse.json({
