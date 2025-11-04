@@ -34,254 +34,251 @@ export async function GET(
     const totalQuantity = distributionList.items.reduce((sum, item) => sum + item.quantity, 0);
     const totalFees = distributionList.items.reduce((sum, item) => sum + (item.fee || 0), 0);
 
-    // HTML für PDF generieren
-    const html = `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <style>
-    body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-      padding: 40px;
-      color: #111827;
-      line-height: 1.6;
-    }
-    .header {
-      text-align: center;
-      margin-bottom: 40px;
-      border-bottom: 3px solid #3B82F6;
-      padding-bottom: 20px;
-    }
-    .logo {
-      font-size: 24px;
-      font-weight: bold;
-      color: #3B82F6;
-      margin-bottom: 10px;
-    }
-    h1 {
-      font-size: 28px;
-      margin: 10px 0;
-      color: #1F2937;
-    }
-    .info-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-      margin: 30px 0;
-      background: #F9FAFB;
-      padding: 20px;
-      border-radius: 8px;
-    }
-    .info-item {
-      margin-bottom: 10px;
-    }
-    .info-label {
-      font-size: 12px;
-      font-weight: 600;
-      color: #6B7280;
-      text-transform: uppercase;
-      margin-bottom: 5px;
-    }
-    .info-value {
-      font-size: 14px;
-      color: #1F2937;
-      font-weight: 500;
-    }
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin: 30px 0;
-    }
-    th {
-      background: #F3F4F6;
-      padding: 12px;
-      text-align: left;
-      font-size: 12px;
-      font-weight: 600;
-      color: #4B5563;
-      text-transform: uppercase;
-      border-bottom: 2px solid #E5E7EB;
-    }
-    th.center {
-      text-align: center;
-    }
-    th.right {
-      text-align: right;
-    }
-    td {
-      padding: 12px;
-      border-bottom: 1px solid #E5E7EB;
-      font-size: 14px;
-    }
-    td.center {
-      text-align: center;
-    }
-    td.right {
-      text-align: right;
-    }
-    tr:hover {
-      background: #F9FAFB;
-    }
-    tfoot {
-      background: #F3F4F6;
-      font-weight: 600;
-    }
-    tfoot td {
-      border-top: 2px solid #D1D5DB;
-      padding: 15px 12px;
-    }
-    .footer {
-      margin-top: 40px;
-      padding-top: 20px;
-      border-top: 2px solid #E5E7EB;
-      font-size: 12px;
-      color: #6B7280;
-      text-align: center;
-    }
-    .summary-box {
-      background: #EFF6FF;
-      border: 2px solid #3B82F6;
-      border-radius: 8px;
-      padding: 20px;
-      margin: 30px 0;
-      text-align: center;
-    }
-    .summary-item {
-      display: inline-block;
-      margin: 0 30px;
-    }
-    .summary-label {
-      font-size: 12px;
-      color: #1D4ED8;
-      font-weight: 600;
-      text-transform: uppercase;
-    }
-    .summary-value {
-      font-size: 24px;
-      font-weight: bold;
-      color: #1E40AF;
-      margin-top: 5px;
-    }
-  </style>
-</head>
-<body>
-  <div class="header">
-    <div class="logo">🎯 WERBEINSEL</div>
-    <h1>Verteilerliste</h1>
-  </div>
+    // Dynamischer Import von pdfmake (für Vercel Compatibility)
+    const pdfMake = await import("pdfmake/build/pdfmake");
+    const pdfFonts = await import("pdfmake/build/vfs_fonts");
+    (pdfMake as any).vfs = pdfFonts.pdfMake.vfs;
 
-  <div class="info-grid">
-    <div>
-      <div class="info-item">
-        <div class="info-label">Event</div>
-        <div class="info-value">${distributionList.eventName}</div>
-      </div>
-      <div class="info-item">
-        <div class="info-label">Event-Adresse</div>
-        <div class="info-value">${distributionList.eventAddress}</div>
-      </div>
-      ${distributionList.eventDate ? `
-      <div class="info-item">
-        <div class="info-label">Event-Datum</div>
-        <div class="info-value">${new Date(distributionList.eventDate).toLocaleDateString("de-DE")}</div>
-      </div>
-      ` : ""}
-    </div>
-    <div>
-      <div class="info-item">
-        <div class="info-label">Kunde</div>
-        <div class="info-value">${distributionList.client.name}</div>
-      </div>
-      <div class="info-item">
-        <div class="info-label">Kampagnenzeitraum</div>
-        <div class="info-value">
-          ${new Date(distributionList.startDate).toLocaleDateString("de-DE")} - 
-          ${new Date(distributionList.endDate).toLocaleDateString("de-DE")}
-        </div>
-      </div>
-      <div class="info-item">
-        <div class="info-label">Erstellt am</div>
-        <div class="info-value">${new Date(distributionList.createdAt).toLocaleDateString("de-DE")}</div>
-      </div>
-    </div>
-  </div>
+    // Tabellen-Rows für die Kommunen
+    const tableBody = [
+      // Header
+      [
+        { text: "PLZ", style: "tableHeader", fillColor: "#f3f4f6" },
+        { text: "Stadt", style: "tableHeader", fillColor: "#f3f4f6" },
+        { text: "Entfernung (km)", style: "tableHeader", alignment: "center", fillColor: "#f3f4f6" },
+        { text: "Anzahl Plakate", style: "tableHeader", alignment: "center", fillColor: "#f3f4f6" },
+        { text: "Größe", style: "tableHeader", alignment: "center", fillColor: "#f3f4f6" },
+        { text: "Gebühr (€)", style: "tableHeader", alignment: "right", fillColor: "#f3f4f6" },
+      ],
+      // Data rows
+      ...distributionList.items.map((item) => [
+        { text: item.city.postalCode || "-", style: "tableCell" },
+        { text: item.city.name, style: "tableCell", bold: true },
+        { text: item.distanceKm ? item.distanceKm.toFixed(1) : "-", style: "tableCell", alignment: "center" },
+        { text: item.quantity.toString(), style: "tableCell", alignment: "center" },
+        { text: item.posterSize, style: "tableCell", alignment: "center" },
+        { text: `${(item.fee || 0).toFixed(2)} €`, style: "tableCell", alignment: "right" },
+      ]),
+      // Footer row
+      [
+        { text: `Gesamt (${distributionList.items.length} Kommunen)`, style: "tableFooter", bold: true, colSpan: 3 },
+        {},
+        {},
+        { text: totalQuantity.toString(), style: "tableFooter", bold: true, alignment: "center" },
+        {},
+        { text: `${totalFees.toFixed(2)} €`, style: "tableFooter", bold: true, alignment: "right" },
+      ],
+    ];
 
-  <table>
-    <thead>
-      <tr>
-        <th>PLZ</th>
-        <th>Stadt</th>
-        <th class="center">Entfernung (km)</th>
-        <th class="center">Anzahl Plakate</th>
-        <th class="center">Größe</th>
-        <th class="right">Gebühr (€)</th>
-      </tr>
-    </thead>
-    <tbody>
-      ${distributionList.items.map((item) => `
-        <tr>
-          <td>${item.city.postalCode || "-"}</td>
-          <td><strong>${item.city.name}</strong></td>
-          <td class="center">${item.distanceKm ? item.distanceKm.toFixed(1) : "-"}</td>
-          <td class="center">${item.quantity}</td>
-          <td class="center">${item.posterSize}</td>
-          <td class="right">${(item.fee || 0).toFixed(2)} €</td>
-        </tr>
-      `).join("")}
-    </tbody>
-    <tfoot>
-      <tr>
-        <td colspan="2"><strong>Gesamt (${distributionList.items.length} Kommunen)</strong></td>
-        <td></td>
-        <td class="center"><strong>${totalQuantity}</strong></td>
-        <td></td>
-        <td class="right"><strong>${totalFees.toFixed(2)} €</strong></td>
-      </tr>
-    </tfoot>
-  </table>
+    // PDF-Definition
+    const docDefinition: any = {
+      pageSize: "A4",
+      pageMargins: [40, 60, 40, 60],
+      content: [
+        // Header
+        {
+          text: "🎯 WERBEINSEL",
+          style: "logo",
+          alignment: "center",
+          margin: [0, 0, 0, 10],
+        },
+        {
+          text: "Verteilerliste",
+          style: "title",
+          alignment: "center",
+          margin: [0, 0, 0, 20],
+        },
 
-  <div class="summary-box">
-    <div class="summary-item">
-      <div class="summary-label">Kommunen</div>
-      <div class="summary-value">${distributionList.items.length}</div>
-    </div>
-    <div class="summary-item">
-      <div class="summary-label">Plakate gesamt</div>
-      <div class="summary-value">${totalQuantity}</div>
-    </div>
-    <div class="summary-item">
-      <div class="summary-label">Gebühren gesamt</div>
-      <div class="summary-value">${totalFees.toFixed(2)} €</div>
-    </div>
-  </div>
+        // Event-Info Grid
+        {
+          columns: [
+            {
+              width: "50%",
+              stack: [
+                { text: "EVENT", style: "sectionLabel" },
+                { text: distributionList.eventName, style: "sectionValue" },
+                { text: " ", margin: [0, 5] },
 
-  ${distributionList.notes ? `
-  <div style="background: #FFFBEB; border: 2px solid #F59E0B; border-radius: 8px; padding: 15px; margin: 20px 0;">
-    <div style="font-size: 12px; font-weight: 600; color: #D97706; text-transform: uppercase; margin-bottom: 5px;">
-      Notizen
-    </div>
-    <div style="font-size: 14px; color: #78350F;">
-      ${distributionList.notes}
-    </div>
-  </div>
-  ` : ""}
+                { text: "EVENT-ADRESSE", style: "sectionLabel" },
+                { text: distributionList.eventAddress, style: "sectionValue" },
+                { text: " ", margin: [0, 5] },
 
-  <div class="footer">
-    <p>Erstellt mit PlakatPro - Plakatverwaltungssystem</p>
-    <p>Dieses Dokument wurde automatisch generiert am ${new Date().toLocaleDateString("de-DE")} um ${new Date().toLocaleTimeString("de-DE")}</p>
-  </div>
-</body>
-</html>
-    `;
+                distributionList.eventDate ? { text: "EVENT-DATUM", style: "sectionLabel" } : {},
+                distributionList.eventDate ? { text: new Date(distributionList.eventDate).toLocaleDateString("de-DE"), style: "sectionValue" } : {},
+              ],
+            },
+            {
+              width: "50%",
+              stack: [
+                { text: "KUNDE", style: "sectionLabel" },
+                { text: distributionList.client.name, style: "sectionValue" },
+                { text: " ", margin: [0, 5] },
 
-    // Einfache HTML-Response (Browser kann das als PDF drucken)
-    // Für echte PDF-Generierung würde man Puppeteer oder ähnliche Libraries nutzen
-    return new NextResponse(html, {
-      headers: {
-        "Content-Type": "text/html",
-        "Content-Disposition": `inline; filename="Verteilerliste_${distributionList.eventName}.html"`,
+                { text: "KAMPAGNENZEITRAUM", style: "sectionLabel" },
+                {
+                  text: `${new Date(distributionList.startDate).toLocaleDateString("de-DE")} - ${new Date(distributionList.endDate).toLocaleDateString("de-DE")}`,
+                  style: "sectionValue",
+                },
+                { text: " ", margin: [0, 5] },
+
+                { text: "ERSTELLT AM", style: "sectionLabel" },
+                { text: new Date(distributionList.createdAt).toLocaleDateString("de-DE"), style: "sectionValue" },
+              ],
+            },
+          ],
+          margin: [0, 0, 0, 20],
+        },
+
+        // Kommunen-Tabelle
+        {
+          table: {
+            headerRows: 1,
+            widths: [40, "*", 60, 60, 40, 60],
+            body: tableBody,
+          },
+          layout: {
+            fillColor: (rowIndex: number) => (rowIndex === 0 || rowIndex === tableBody.length - 1) ? "#f3f4f6" : null,
+            hLineWidth: (i: number) => (i === 0 || i === 1 || i === tableBody.length) ? 1 : 0.5,
+            vLineWidth: () => 0,
+            hLineColor: () => "#e5e7eb",
+          },
+          margin: [0, 0, 0, 20],
+        },
+
+        // Summary Box
+        {
+          table: {
+            widths: ["*", "*", "*"],
+            body: [
+              [
+                {
+                  stack: [
+                    { text: "KOMMUNEN", style: "summaryLabel", alignment: "center" },
+                    { text: distributionList.items.length.toString(), style: "summaryValue", alignment: "center" },
+                  ],
+                  fillColor: "#eff6ff",
+                  border: [true, true, false, true],
+                },
+                {
+                  stack: [
+                    { text: "PLAKATE GESAMT", style: "summaryLabel", alignment: "center" },
+                    { text: totalQuantity.toString(), style: "summaryValue", alignment: "center" },
+                  ],
+                  fillColor: "#eff6ff",
+                  border: [false, true, false, true],
+                },
+                {
+                  stack: [
+                    { text: "GEBÜHREN GESAMT", style: "summaryLabel", alignment: "center" },
+                    { text: `${totalFees.toFixed(2)} €`, style: "summaryValue", alignment: "center" },
+                  ],
+                  fillColor: "#eff6ff",
+                  border: [false, true, true, true],
+                },
+              ],
+            ],
+          },
+          layout: "noBorders",
+          margin: [0, 0, 0, 20],
+        },
+
+        // Notizen
+        distributionList.notes ? {
+          stack: [
+            { text: "NOTIZEN", style: "sectionLabel" },
+            { text: distributionList.notes, style: "notes" },
+          ],
+          margin: [0, 0, 0, 20],
+        } : {},
+
+        // Footer
+        {
+          text: [
+            "Erstellt mit PlakatPro - Plakatverwaltungssystem\n",
+            `Generiert am ${new Date().toLocaleDateString("de-DE")} um ${new Date().toLocaleTimeString("de-DE")}`,
+          ],
+          style: "footer",
+          alignment: "center",
+          margin: [0, 20, 0, 0],
+        },
+      ],
+      styles: {
+        logo: {
+          fontSize: 18,
+          bold: true,
+          color: "#3B82F6",
+        },
+        title: {
+          fontSize: 24,
+          bold: true,
+          color: "#1F2937",
+        },
+        sectionLabel: {
+          fontSize: 9,
+          bold: true,
+          color: "#6B7280",
+          margin: [0, 0, 0, 3],
+        },
+        sectionValue: {
+          fontSize: 11,
+          color: "#1F2937",
+        },
+        tableHeader: {
+          fontSize: 9,
+          bold: true,
+          color: "#4B5563",
+          margin: [5, 5],
+        },
+        tableCell: {
+          fontSize: 10,
+          color: "#1F2937",
+          margin: [5, 8],
+        },
+        tableFooter: {
+          fontSize: 10,
+          fillColor: "#f3f4f6",
+          margin: [5, 10],
+        },
+        summaryLabel: {
+          fontSize: 9,
+          bold: true,
+          color: "#1D4ED8",
+          margin: [0, 10, 0, 5],
+        },
+        summaryValue: {
+          fontSize: 20,
+          bold: true,
+          color: "#1E40AF",
+          margin: [0, 0, 0, 10],
+        },
+        notes: {
+          fontSize: 10,
+          color: "#78350F",
+          background: "#FFFBEB",
+          margin: [10, 10],
+        },
+        footer: {
+          fontSize: 8,
+          color: "#6B7280",
+          italics: true,
+        },
       },
+    };
+
+    // PDF erstellen
+    const pdfDoc = pdfMake.createPdf(docDefinition);
+
+    // PDF als Buffer generieren
+    return new Promise<NextResponse>((resolve, reject) => {
+      pdfDoc.getBuffer((buffer: Buffer) => {
+        const response = new NextResponse(buffer, {
+          headers: {
+            "Content-Type": "application/pdf",
+            "Content-Disposition": `attachment; filename="Verteilerliste_${distributionList.eventName.replace(/[^a-zA-Z0-9]/g, "_")}_${new Date().toISOString().split("T")[0]}.pdf"`,
+          },
+        });
+        resolve(response);
+      });
     });
   } catch (error) {
     console.error("Fehler beim PDF-Export:", error);
@@ -291,4 +288,3 @@ export async function GET(
     );
   }
 }
-
