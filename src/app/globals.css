@@ -63,7 +63,7 @@
 
 @layer components {
   /* Buttons */
-  .btn {
+  .btn-primary {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -74,10 +74,6 @@
     transition: all 0.15s ease;
     cursor: pointer;
     white-space: nowrap;
-  }
-  
-  .btn-primary {
-    @apply btn;
     background-color: var(--color-primary-600);
     color: white;
     border: 1px solid transparent;
@@ -95,7 +91,16 @@
   }
 
   .btn-secondary {
-    @apply btn;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    font-size: 0.875rem;
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.5rem;
+    transition: all 0.15s ease;
+    cursor: pointer;
+    white-space: nowrap;
     background-color: white;
     color: var(--color-gray-700);
     border: 1px solid var(--color-gray-300);
@@ -107,7 +112,16 @@
   }
   
   .btn-ghost {
-    @apply btn;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+    font-size: 0.875rem;
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.5rem;
+    transition: all 0.15s ease;
+    cursor: pointer;
+    white-space: nowrap;
     background-color: transparent;
     color: var(--color-gray-600);
   }

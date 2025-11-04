@@ -206,21 +206,26 @@ export default function NewPermitPage() {
           </div>
 
           {/* Actions */}
-          <div className="flex gap-4 justify-end">
-            <Link href="/permits" className="btn-secondary">
-              Abbrechen
-            </Link>
+          <div className="flex items-center gap-3 pt-2">
             <button
               type="submit"
               disabled={loading || campaigns.length === 0 || cities.length === 0}
               className="btn-primary disabled:opacity-50"
             >
-              {loading ? "Erstelle..." : "Genehmigung beantragen"}
+              {loading ? "Wird beantragt..." : "Genehmigung beantragen"}
+            </button>
+            <button
+              type="button"
+              onClick={() => router.push("/permits")}
+              className="btn-secondary"
+            >
+              Abbrechen
             </button>
           </div>
         </form>
+        </div>
       </div>
-    </div>
+    </AppLayout>
   );
 }
 
