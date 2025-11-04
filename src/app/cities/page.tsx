@@ -30,6 +30,9 @@ export default async function CitiesPage() {
               Verwaltung aller Kommunen und deren Genehmigungsrichtlinien
             </p>
           </div>
+          <Link href="/cities/new" className="btn-primary">
+            ➕ Neue Kommune
+          </Link>
         </div>
       </div>
 
@@ -38,9 +41,20 @@ export default async function CitiesPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {cities.map((city) => (
             <div key={city.id} className="card card-hover">
-              <h3 className="font-semibold text-gray-900 text-lg mb-3">
-                {city.name}
-              </h3>
+              <div className="flex items-start justify-between mb-3">
+                <h3 className="font-semibold text-gray-900 text-lg">
+                  {city.name}
+                </h3>
+                {city.postalCode && (
+                  <span className="badge badge-gray text-xs">{city.postalCode}</span>
+                )}
+              </div>
+
+              {city.population && (
+                <div className="text-sm text-gray-600 mb-3">
+                  👥 {city.population.toLocaleString('de-DE')} Einwohner
+                </div>
+              )}
 
               {city.email && (
                 <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">

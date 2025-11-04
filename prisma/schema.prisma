@@ -127,6 +127,7 @@ model City {
   id                   String                 @id @default(cuid())
   name                 String
   postalCode           String? // PLZ
+  population           Int? // Einwohnerzahl
   email                String?
   feeModel             String? // pauschal / proPlakat / proZeitraum
   fee                  Float?
