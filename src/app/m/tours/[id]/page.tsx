@@ -69,18 +69,18 @@ export default async function TourDetailPage({ params }: TourDetailPageProps) {
       : [];
 
   return (
-    <div className="min-h-screen p-4 max-w-2xl mx-auto pb-24">
+    <div className="min-h-screen bg-gray-50 p-4 max-w-2xl mx-auto pb-24">
       {/* Header */}
       <div className="mb-6">
-        <Link href="/m/tours" className="text-brand-yellow mb-4 inline-block">
+        <Link href="/m/tours" className="text-blue-600 mb-4 inline-block hover:text-blue-700">
           ← Zurück zu Touren
         </Link>
         
-        <h1 className="text-3xl font-bold text-brand-yellow mb-2">
+        <h1 className="text-3xl font-bold text-gray-800 mb-2">
           {tour.campaign?.eventName || "Tour Details"}
         </h1>
         
-        <div className="flex items-center gap-4 text-sm text-gray-400">
+        <div className="flex items-center gap-4 text-sm text-gray-600">
           <span>📅 {formatDate(tour.plannedDate)}</span>
           {tour.installer && <span>🚗 {tour.installer.name}</span>}
           <span>📍 {tour.stops.length} Stopps</span>
@@ -88,22 +88,22 @@ export default async function TourDetailPage({ params }: TourDetailPageProps) {
       </div>
 
       {/* Fortschritt */}
-      <div className="card mb-6">
+      <div className="card mb-6 bg-blue-50 border-blue-200">
         <div className="flex justify-between items-center mb-2">
-          <h2 className="font-bold text-lg">Gesamt-Fortschritt</h2>
-          <span className="text-2xl font-bold text-brand-yellow">
+          <h2 className="font-bold text-lg text-gray-800">Gesamt-Fortschritt</h2>
+          <span className="text-2xl font-bold text-blue-600">
             {Math.round(progress)}%
           </span>
         </div>
         
-        <div className="w-full bg-zinc-800 rounded-full h-4 mb-2">
+        <div className="w-full bg-gray-200 rounded-full h-4 mb-2">
           <div
-            className="bg-brand-yellow h-4 rounded-full transition-all"
+            className="bg-blue-500 h-4 rounded-full transition-all"
             style={{ width: `${progress}%` }}
           />
         </div>
         
-        <p className="text-sm text-gray-400">
+        <p className="text-sm text-gray-600">
           {totalHung} von {totalPlanItems} Plakaten aufgehängt
         </p>
       </div>
@@ -111,8 +111,8 @@ export default async function TourDetailPage({ params }: TourDetailPageProps) {
       {/* Navigation Segments */}
       {navSegments.length > 0 && (
         <div className="card mb-6">
-          <h2 className="font-bold text-lg mb-3">🧭 Navigation</h2>
-          <p className="text-sm text-gray-400 mb-3">
+          <h2 className="font-bold text-lg mb-3 text-gray-800">🧭 Navigation</h2>
+          <p className="text-sm text-gray-600 mb-3">
             Tour ist in {navSegments.length} Segment(e) aufgeteilt (max. 23
             Waypoints pro Segment)
           </p>
@@ -144,7 +144,7 @@ export default async function TourDetailPage({ params }: TourDetailPageProps) {
 
       {/* Stopps */}
       <div className="space-y-4">
-        <h2 className="font-bold text-xl text-brand-yellow">Stopps</h2>
+        <h2 className="font-bold text-xl text-gray-800">Stopps</h2>
         
         {tour.stops.map((stop, idx) => {
           const handleNavigate = () => {
@@ -167,7 +167,7 @@ export default async function TourDetailPage({ params }: TourDetailPageProps) {
 
       {/* Floating Action Button */}
       <div className="fixed bottom-6 right-6">
-        <button className="w-16 h-16 rounded-full bg-brand-yellow text-brand-black text-3xl shadow-lg hover:scale-110 transition-transform">
+        <button className="w-16 h-16 rounded-full bg-blue-500 text-white text-3xl shadow-lg hover:scale-110 hover:bg-blue-600 transition-all">
           📷
         </button>
       </div>
