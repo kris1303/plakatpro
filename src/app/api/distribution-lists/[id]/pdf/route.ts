@@ -35,9 +35,14 @@ export async function GET(
     const totalFees = distributionList.items.reduce((sum, item) => sum + (item.fee || 0), 0);
 
     // Dynamischer Import von pdfmake (für Vercel Compatibility)
-    const pdfMake = await import("pdfmake/build/pdfmake");
+    const pdfMakeBuild = await import("pdfmake/build/pdfmake");
     const pdfFonts = await import("pdfmake/build/vfs_fonts");
-    (pdfMake as any).vfs = pdfFonts.pdfMake.vfs;
+    const pdfMake = pdfMakeBuild.default || pdfMakeBuild;
+    
+    // Fonts setzen
+    if (pdfFonts && (pdfFonts as any).pdfMake && (pdfFonts as any).pdfMake.vfs) {
+      (pdfMake as any).vfs = (pdfFonts as any).pdfMake.vfs;
+    }
 
     // Tabellen-Rows für die Kommunen
     const tableBody = [
@@ -266,7 +271,7 @@ export async function GET(
     };
 
     // PDF erstellen
-    const pdfDoc = pdfMake.createPdf(docDefinition);
+    const pdfDoc = (pdfMake as any).createPdf(docDefinition);
 
     // PDF als Buffer generieren
     return new Promise<NextResponse>((resolve, reject) => {
