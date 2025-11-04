@@ -2,12 +2,12 @@ import Link from "next/link";
 
 export default function Home() {
   return (
-    <main className="min-h-screen p-8">
-      <div className="max-w-7xl mx-auto">
-        <h1 className="text-4xl font-bold mb-4 text-brand-yellow">
+    <main className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50">
+      <div className="max-w-7xl mx-auto px-8 py-16">
+        <h1 className="text-5xl font-bold mb-4 text-gray-800">
           🚀 PlakatPro
         </h1>
-        <p className="text-xl mb-8">
+        <p className="text-xl mb-12 text-gray-600">
           Professionelles Kampagnenmanagement für Plakatkampagnen
         </p>
         
