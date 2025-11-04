@@ -31,7 +31,7 @@ export async function getDistanceMatrix(
       key: apiKey,
       origins: formattedOrigins as any,
       destinations: formattedDestinations as any,
-      units: "metric",
+      units: "metric" as any,
       language: "de",
     },
   });
