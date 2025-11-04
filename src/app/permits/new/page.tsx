@@ -26,6 +26,7 @@ export default function NewPermitPage() {
   const [campaigns, setCampaigns] = useState<Campaign[]>([]);
   const [cities, setCities] = useState<City[]>([]);
   const [selectedCityIds, setSelectedCityIds] = useState<string[]>([]);
+  const [searchTerm, setSearchTerm] = useState("");
   const [formData, setFormData] = useState({
     campaignId: "",
     notes: "",
@@ -94,21 +95,23 @@ export default function NewPermitPage() {
     }
   };
 
-  const toggleCity = (cityId: string) => {
-    setSelectedCityIds((prev) =>
-      prev.includes(cityId)
-        ? prev.filter((id) => id !== cityId)
-        : [...prev, cityId]
-    );
+  const addCity = (cityId: string) => {
+    if (!selectedCityIds.includes(cityId)) {
+      setSelectedCityIds([...selectedCityIds, cityId]);
+    }
+    setSearchTerm(""); // Suchfeld leeren nach Auswahl
   };
 
-  const selectAllCities = () => {
-    setSelectedCityIds(cities.map((c) => c.id));
+  const removeCity = (cityId: string) => {
+    setSelectedCityIds(selectedCityIds.filter((id) => id !== cityId));
   };
 
-  const deselectAllCities = () => {
-    setSelectedCityIds([]);
-  };
+  const filteredCities = cities.filter((city) =>
+    city.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const selectedCities = cities.filter((c) => selectedCityIds.includes(c.id));
+  const totalFees = selectedCities.reduce((sum, city) => sum + (city.fee || 0), 0);
 
   return (
     <AppLayout>
@@ -153,29 +156,11 @@ export default function NewPermitPage() {
             )}
           </div>
 
-          {/* Kommunen auswählen (Mehrfachauswahl) */}
+          {/* Kommunen auswählen */}
           <div className="card">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-semibold text-gray-800">
-                Kommunen auswählen * ({selectedCityIds.length} ausgewählt)
-              </h2>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={selectAllCities}
-                  className="btn-ghost text-xs px-3 py-1"
-                >
-                  Alle auswählen
-                </button>
-                <button
-                  type="button"
-                  onClick={deselectAllCities}
-                  className="btn-ghost text-xs px-3 py-1"
-                >
-                  Alle abwählen
-                </button>
-              </div>
-            </div>
+            <h2 className="text-base font-semibold mb-6 text-gray-900">
+              Kommunen auswählen *
+            </h2>
 
             {cities.length === 0 && (
               <p className="text-sm text-amber-600 p-4 bg-amber-50 rounded-lg">
@@ -183,50 +168,99 @@ export default function NewPermitPage() {
               </p>
             )}
 
-            {/* Kommunen-Liste mit Checkboxen */}
-            <div className="space-y-2 max-h-96 overflow-y-auto">
-              {cities.map((city) => {
-                const isSelected = selectedCityIds.includes(city.id);
-                
-                return (
-                  <label
-                    key={city.id}
-                    className={`flex items-start gap-3 p-4 rounded-lg border-2 cursor-pointer transition-all ${
-                      isSelected
-                        ? "bg-blue-50 border-blue-300"
-                        : "bg-white border-gray-200 hover:border-gray-300"
-                    }`}
-                  >
-                    <input
-                      type="checkbox"
-                      checked={isSelected}
-                      onChange={() => toggleCity(city.id)}
-                      className="mt-1 w-4 h-4 text-blue-600 rounded border-gray-300 focus:ring-2 focus:ring-blue-500"
-                    />
-                    
-                    <div className="flex-1">
-                      <div className="font-semibold text-gray-900 mb-1">
-                        {city.name}
-                      </div>
-                      <div className="grid grid-cols-2 gap-x-4 gap-y-1 text-xs text-gray-600">
-                        {city.feeModel && (
-                          <span>💰 {city.feeModel}</span>
-                        )}
-                        {city.fee && (
-                          <span className="font-medium">💵 {city.fee.toFixed(2)} €</span>
-                        )}
-                        {city.maxQty && (
-                          <span>🔢 Max. {city.maxQty} Plakate</span>
-                        )}
-                        {city.maxSize && (
-                          <span>📐 {city.maxSize}</span>
-                        )}
-                      </div>
-                    </div>
+            {cities.length > 0 && (
+              <div className="space-y-4">
+                {/* Suchfeld */}
+                <div>
+                  <label className="label">
+                    Kommune suchen und hinzufügen
                   </label>
-                );
-              })}
-            </div>
+                  <input
+                    type="text"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    placeholder="Namen der Kommune eingeben..."
+                    className="input"
+                  />
+                </div>
+
+                {/* Suchergebnisse */}
+                {searchTerm && (
+                  <div className="border border-gray-200 rounded-lg max-h-60 overflow-y-auto">
+                    {filteredCities.length > 0 ? (
+                      <div className="divide-y divide-gray-100">
+                        {filteredCities.map((city) => {
+                          const alreadySelected = selectedCityIds.includes(city.id);
+                          
+                          return (
+                            <button
+                              key={city.id}
+                              type="button"
+                              onClick={() => addCity(city.id)}
+                              disabled={alreadySelected}
+                              className={`w-full text-left p-3 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
+                                alreadySelected ? "bg-gray-50" : ""
+                              }`}
+                            >
+                              <div className="font-medium text-gray-900 mb-1">
+                                {city.name} {alreadySelected && "✓"}
+                              </div>
+                              <div className="flex gap-3 text-xs text-gray-600">
+                                {city.fee && <span>💵 {city.fee.toFixed(2)} €</span>}
+                                {city.feeModel && <span>{city.feeModel}</span>}
+                                {city.maxQty && <span>Max. {city.maxQty}</span>}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    ) : (
+                      <div className="p-4 text-center text-gray-500 text-sm">
+                        Keine Kommune gefunden
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* Ausgewählte Kommunen (Chips) */}
+                {selectedCities.length > 0 && (
+                  <div className="border border-blue-200 bg-blue-50 rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-sm font-medium text-gray-900">
+                        Ausgewählte Kommunen ({selectedCities.length})
+                      </span>
+                      <span className="text-sm font-semibold text-blue-600">
+                        Gesamt: {totalFees.toFixed(2)} €
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedCities.map((city) => (
+                        <div
+                          key={city.id}
+                          className="inline-flex items-center gap-2 bg-white border border-blue-200 rounded-full pl-3 pr-2 py-1.5 text-sm"
+                        >
+                          <span className="font-medium text-gray-900">
+                            {city.name}
+                          </span>
+                          {city.fee && (
+                            <span className="text-xs text-gray-600">
+                              {city.fee.toFixed(2)} €
+                            </span>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => removeCity(city.id)}
+                            className="ml-1 w-5 h-5 rounded-full hover:bg-red-100 text-gray-400 hover:text-red-600 flex items-center justify-center transition-colors"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Notizen */}
