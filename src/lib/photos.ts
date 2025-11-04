@@ -55,7 +55,7 @@ export async function uploadPhotoToGooglePhotos(
         "X-Goog-Upload-File-Name": fileName,
         "X-Goog-Upload-Protocol": "raw",
       },
-      body: fileBuffer,
+      body: fileBuffer as any,
     }
   );
 
