@@ -2,32 +2,65 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer base {
-  :root {
-    --background: 0 0% 0%;
-    --foreground: 60 100% 50%;
-  }
+@theme {
+  --color-brand-yellow: #FFD800;
+  --color-brand-black: #000000;
+  --color-brand-white: #FFFFFF;
+}
 
+@layer base {
   body {
-    @apply bg-brand-black text-brand-white;
+    background-color: var(--color-brand-black);
+    color: var(--color-brand-white);
   }
 }
 
 @layer components {
   .btn-primary {
-    @apply bg-brand-yellow text-brand-black font-semibold px-4 py-2 rounded-lg hover:bg-yellow-500 transition-colors;
+    background-color: var(--color-brand-yellow);
+    color: var(--color-brand-black);
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    transition: background-color 0.2s;
+  }
+  
+  .btn-primary:hover {
+    background-color: #ecc700;
   }
 
   .btn-secondary {
-    @apply bg-brand-white text-brand-black font-semibold px-4 py-2 rounded-lg hover:bg-gray-200 transition-colors;
+    background-color: var(--color-brand-white);
+    color: var(--color-brand-black);
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    transition: background-color 0.2s;
+  }
+  
+  .btn-secondary:hover {
+    background-color: #e5e5e5;
   }
 
   .card {
-    @apply bg-zinc-900 border border-zinc-800 rounded-lg p-4 shadow-lg;
+    background-color: rgb(24, 24, 27);
+    border: 1px solid rgb(39, 39, 42);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
   }
 
   .input {
-    @apply bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-brand-white focus:outline-none focus:ring-2 focus:ring-brand-yellow;
+    background-color: rgb(39, 39, 42);
+    border: 1px solid rgb(63, 63, 70);
+    border-radius: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    color: var(--color-brand-white);
+  }
+  
+  .input:focus {
+    outline: none;
+    ring: 2px solid var(--color-brand-yellow);
   }
 }
 
