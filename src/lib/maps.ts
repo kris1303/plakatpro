@@ -117,3 +117,35 @@ export function createNavigationSegments(
   return segments;
 }
 
+/**
+ * Berechnet die Entfernung zwischen zwei Adressen
+ */
+export async function calculateDistance(origin: string, destination: string) {
+  const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+  if (!apiKey) throw new Error("Google Maps API Key fehlt");
+
+  const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${encodeURIComponent(
+    origin
+  )}&destinations=${encodeURIComponent(destination)}&units=metric&key=${apiKey}`;
+
+  const response = await fetch(url);
+  const data = await response.json();
+
+  if (data.status !== "OK") {
+    throw new Error(`Google Maps API Error: ${data.status}`);
+  }
+
+  const element = data.rows[0].elements[0];
+  if (element.status !== "OK") {
+    throw new Error(`Route nicht gefunden: ${element.status}`);
+  }
+
+  return {
+    distance: element.distance.value, // in Metern
+    duration: element.duration.value, // in Sekunden
+    distanceText: element.distance.text,
+    durationText: element.duration.text,
+    distanceKm: Math.round(element.distance.value / 100) / 10, // in km (auf 0.1 gerundet)
+  };
+}
+
