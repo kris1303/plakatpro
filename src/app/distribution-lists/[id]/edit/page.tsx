@@ -150,20 +150,53 @@ export default function EditDistributionListPage() {
     );
   });
 
-  const addItem = () => {
+  const calculateDistanceForCity = async (cityName: string, postalCode: string | null) => {
+    if (!formData.eventAddress) {
+      return 0;
+    }
+
+    try {
+      const destination = postalCode ? `${postalCode} ${cityName}, Deutschland` : `${cityName}, Deutschland`;
+      const res = await fetch("/api/calculate-distance", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          origin: formData.eventAddress,
+          destination: destination,
+        }),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        return data.distanceKm || 0;
+      }
+    } catch (error) {
+      console.error("Fehler bei Entfernungsberechnung:", error);
+    }
+    return 0;
+  };
+
+  const addItem = async () => {
     if (!selectedCityId) return;
 
     const city = cities.find((c) => c.id === selectedCityId);
     if (!city) return;
 
+    // Automatische Entfernungsberechnung
+    let calculatedDistance = itemForm.distanceKm;
+    if (formData.eventAddress && calculatedDistance === 0) {
+      calculatedDistance = await calculateDistanceForCity(city.name, city.postalCode);
+    }
+
     const newItem: DistributionItem = {
+      id: undefined,
       cityId: city.id,
       cityName: city.name,
       postalCode: city.postalCode || "",
       quantity: itemForm.quantity,
       posterSize: itemForm.posterSize,
       fee: itemForm.fee || city.fee || 0,
-      distanceKm: itemForm.distanceKm,
+      distanceKm: calculatedDistance,
     };
 
     setItems([...items, newItem]);
@@ -463,8 +496,14 @@ export default function EditDistributionListPage() {
               disabled={!selectedCityId}
               className="btn-secondary"
             >
-              ➕ Kommune hinzufügen
+              ➕ Kommune hinzufügen {formData.eventAddress && "(mit Entfernungsberechnung)"}
             </button>
+
+            {!formData.eventAddress && (
+              <p className="text-xs text-amber-600 mt-2">
+                💡 Tipp: Event-Adresse eingeben für automatische Entfernungsberechnung
+              </p>
+            )}
           </div>
 
           {/* Ausgewählte Kommunen */}
