@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import TourList from "@/components/Mobile/TourList";
 import Link from "next/link";
 
+export const dynamic = 'force-dynamic';
+
 export default async function ToursPage() {
   const tours = await prisma.route.findMany({
     include: {

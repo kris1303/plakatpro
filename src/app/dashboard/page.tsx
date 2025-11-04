@@ -2,6 +2,8 @@ import { prisma } from "@/lib/prisma";
 import KanbanBoard from "@/components/KanbanBoard";
 import Link from "next/link";
 
+export const dynamic = 'force-dynamic';
+
 export default async function DashboardPage() {
   const campaigns = await prisma.campaign.findMany({
     include: {

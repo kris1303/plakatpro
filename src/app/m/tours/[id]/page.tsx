@@ -5,6 +5,8 @@ import { formatDate } from "@/lib/utils";
 import { createNavigationSegments, createNavigationUrl } from "@/lib/maps";
 import Link from "next/link";
 
+export const dynamic = 'force-dynamic';
+
 interface TourDetailPageProps {
   params: Promise<{ id: string }>;
 }
