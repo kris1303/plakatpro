@@ -13,7 +13,15 @@ export async function GET(
         client: true,
         items: {
           include: {
-            city: true,
+            city: {
+              select: {
+                id: true,
+                name: true,
+                postalCode: true,
+                population: true,
+                email: true,
+              },
+            },
           },
           orderBy: {
             city: {
