@@ -202,6 +202,91 @@ export async function GET(
           margin: [0, 0, 0, 20],
         },
 
+        // Kostenübersicht
+        {
+          text: "KOSTENÜBERSICHT",
+          style: "sectionHeader",
+          margin: [0, 10, 0, 10],
+        },
+        {
+          table: {
+            widths: ["*", 80, 60, 80],
+            body: [
+              // Header
+              [
+                { text: "Position", style: "tableHeader", fillColor: "#f3f4f6" },
+                { text: "Menge", style: "tableHeader", alignment: "center", fillColor: "#f3f4f6" },
+                { text: "Preis", style: "tableHeader", alignment: "right", fillColor: "#f3f4f6" },
+                { text: "Gesamt", style: "tableHeader", alignment: "right", fillColor: "#f3f4f6" },
+              ],
+              // A1 Plakate
+              [
+                { text: "A1 Plakate", style: "tableCell" },
+                { text: `${quantityA1}x`, style: "tableCell", alignment: "center" },
+                { text: `${PRICE_A1.toFixed(2)} €`, style: "tableCell", alignment: "right" },
+                { text: `${costA1.toFixed(2)} €`, style: "tableCell", alignment: "right", bold: true },
+              ],
+              // A0 Plakate
+              [
+                { text: "A0 Plakate", style: "tableCell" },
+                { text: `${quantityA0}x`, style: "tableCell", alignment: "center" },
+                { text: `${PRICE_A0.toFixed(2)} €`, style: "tableCell", alignment: "right" },
+                { text: `${costA0.toFixed(2)} €`, style: "tableCell", alignment: "right", bold: true },
+              ],
+              // Antragsgebühren
+              [
+                { text: "Anträge bei Kommunen", style: "tableCell" },
+                { text: `${distributionList.items.length}x`, style: "tableCell", alignment: "center" },
+                { text: `${PRICE_PER_APPLICATION.toFixed(2)} €`, style: "tableCell", alignment: "right" },
+                { text: `${costApplications.toFixed(2)} €`, style: "tableCell", alignment: "right", bold: true },
+              ],
+              // Kommunen-Gebühren
+              [
+                { text: "Gebühren der Kommunen", style: "tableCell" },
+                { text: `${distributionList.items.length}x`, style: "tableCell", alignment: "center" },
+                { text: "variabel", style: "tableCell", alignment: "right" },
+                { text: `${costCityFees.toFixed(2)} €`, style: "tableCell", alignment: "right", bold: true },
+              ],
+              // Zwischensumme
+              [
+                { text: "Zwischensumme (Netto)", style: "tableFooter", bold: true, colSpan: 3, fillColor: "#f9fafb" },
+                {},
+                {},
+                { text: `${subtotal.toFixed(2)} €`, style: "tableFooter", bold: true, alignment: "right", fillColor: "#f9fafb" },
+              ],
+              // MwSt
+              [
+                { text: "MwSt. (19%)", style: "tableCell", colSpan: 3 },
+                {},
+                {},
+                { text: `${vat.toFixed(2)} €`, style: "tableCell", alignment: "right", bold: true },
+              ],
+              // Gesamtsumme
+              [
+                { text: "GESAMTSUMME (BRUTTO)", style: "tableFooter", bold: true, colSpan: 3, fillColor: "#dcfce7", fontSize: 11 },
+                {},
+                {},
+                { text: `${total.toFixed(2)} €`, style: "tableFooter", bold: true, alignment: "right", fillColor: "#dcfce7", color: "#15803d", fontSize: 13 },
+              ],
+            ],
+          },
+          layout: {
+            hLineWidth: function (i: number, node: any) {
+              return i === 0 || i === 1 || i === node.table.body.length - 3 || i === node.table.body.length ? 1 : 0.5;
+            },
+            vLineWidth: function () {
+              return 0.5;
+            },
+            hLineColor: function (i: number, node: any) {
+              return i === 0 || i === 1 ? "#d1d5db" : "#e5e7eb";
+            },
+            vLineColor: function () {
+              return "#e5e7eb";
+            },
+          },
+          margin: [0, 0, 0, 20],
+        },
+
         // Notizen
         distributionList.notes ? {
           stack: [
