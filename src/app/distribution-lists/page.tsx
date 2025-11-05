@@ -82,7 +82,8 @@ export default async function DistributionListsPage() {
 
             const config = statusConfig[list.status];
             const totalFees = list.items.reduce((sum, item) => sum + (item.fee || 0), 0);
-            const totalQuantity = list.items.reduce((sum, item) => sum + item.quantity, 0);
+            const quantityA1 = list.items.filter((i: any) => i.posterSize === 'A1').reduce((sum: number, i: any) => sum + i.quantity, 0);
+            const quantityA0 = list.items.filter((i: any) => i.posterSize === 'A0').reduce((sum: number, i: any) => sum + i.quantity, 0);
 
             return (
               <Link
@@ -118,18 +119,22 @@ export default async function DistributionListsPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-100">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3 pt-4 border-t border-gray-100">
                   <div className="text-center">
                     <div className="text-sm font-semibold text-gray-900">{list.items.length}</div>
                     <div className="text-xs text-gray-600">Kommunen</div>
                   </div>
                   <div className="text-center">
-                    <div className="text-sm font-semibold text-gray-900">{totalQuantity}</div>
-                    <div className="text-xs text-gray-600">Plakate</div>
+                    <div className="text-sm font-semibold text-blue-600">{quantityA1}</div>
+                    <div className="text-xs text-gray-600">A1 Plakate</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-sm font-semibold text-blue-600">{quantityA0}</div>
+                    <div className="text-xs text-gray-600">A0 Plakate</div>
                   </div>
                   <div className="text-center">
                     <div className="text-sm font-semibold text-gray-900">{totalFees.toFixed(2)} €</div>
-                    <div className="text-xs text-gray-600">Gesamt-Gebühren</div>
+                    <div className="text-xs text-gray-600">Gebühren</div>
                   </div>
                 </div>
               </Link>

@@ -159,6 +159,8 @@ export default function DistributionListDetailPage() {
   const config = statusConfig[distributionList.status as keyof typeof statusConfig];
   const totalQuantity = distributionList.items.reduce((sum, item) => sum + item.quantity, 0);
   const totalFees = distributionList.items.reduce((sum, item) => sum + (item.fee || 0), 0);
+  const quantityA1 = distributionList.items.filter(i => i.posterSize === 'A1').reduce((sum, i) => sum + i.quantity, 0);
+  const quantityA0 = distributionList.items.filter(i => i.posterSize === 'A0').reduce((sum, i) => sum + i.quantity, 0);
 
   return (
     <AppLayout>
@@ -244,6 +246,29 @@ export default function DistributionListDetailPage() {
               <div className="text-sm text-gray-700">{distributionList.notes}</div>
             </div>
           )}
+        </div>
+
+        {/* Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          <div className="card text-center bg-gray-50">
+            <div className="text-2xl font-bold text-gray-900 mb-1">{distributionList.items.length}</div>
+            <div className="text-xs font-medium text-gray-600">Kommunen</div>
+          </div>
+          
+          <div className="card text-center bg-blue-50 border-blue-200">
+            <div className="text-2xl font-bold text-blue-600 mb-1">{quantityA1}</div>
+            <div className="text-xs font-medium text-blue-700">Plakate A1</div>
+          </div>
+
+          <div className="card text-center bg-blue-50 border-blue-200">
+            <div className="text-2xl font-bold text-blue-600 mb-1">{quantityA0}</div>
+            <div className="text-xs font-medium text-blue-700">Plakate A0</div>
+          </div>
+
+          <div className="card text-center bg-green-50 border-green-200">
+            <div className="text-2xl font-bold text-green-600 mb-1">{totalFees.toFixed(2)} €</div>
+            <div className="text-xs font-medium text-green-700">Gebühren gesamt</div>
+          </div>
         </div>
 
         {/* Table */}
