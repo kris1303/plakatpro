@@ -23,7 +23,6 @@ export async function GET(req: NextRequest) {
             permits: true,
             routes: true,
             photos: true,
-            tasks: true,
           },
         },
       },

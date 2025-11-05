@@ -14,7 +14,6 @@ export default async function CampaignsPage() {
           permits: true,
           routes: true,
           photos: true,
-          tasks: true,
         },
       },
     },

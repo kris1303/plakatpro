@@ -19,7 +19,6 @@ export async function GET(
         },
         routes: true,
         photos: true,
-        tasks: true,
       },
     });
 
