@@ -32,7 +32,22 @@ export async function GET(
     }
 
     const totalQuantity = distributionList.items.reduce((sum, item) => sum + item.quantity, 0);
-    const totalFees = distributionList.items.reduce((sum, item) => sum + (item.fee || 0), 0);
+    const quantityA1 = distributionList.items.filter(i => i.posterSize === 'A1').reduce((sum, i) => sum + i.quantity, 0);
+    const quantityA0 = distributionList.items.filter(i => i.posterSize === 'A0').reduce((sum, i) => sum + i.quantity, 0);
+    
+    // Preise & Kostenberechnung
+    const PRICE_A1 = 3.00;
+    const PRICE_A0 = 6.00;
+    const PRICE_PER_APPLICATION = 5.00;
+    const VAT_RATE = 0.19;
+    
+    const costA1 = quantityA1 * PRICE_A1;
+    const costA0 = quantityA0 * PRICE_A0;
+    const costApplications = distributionList.items.length * PRICE_PER_APPLICATION;
+    const costCityFees = distributionList.items.reduce((sum, item) => sum + (item.fee || 0), 0);
+    const subtotal = costA1 + costA0 + costApplications + costCityFees;
+    const vat = subtotal * VAT_RATE;
+    const total = subtotal + vat;
 
     // Dynamischer Import von pdfmake (für Vercel Compatibility)
     const pdfMakeBuild = await import("pdfmake/build/pdfmake");
