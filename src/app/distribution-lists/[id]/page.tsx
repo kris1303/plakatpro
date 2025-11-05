@@ -280,8 +280,8 @@ export default function DistributionListDetailPage() {
           </div>
 
           <div className="card text-center bg-green-50 border-green-200">
-            <div className="text-2xl font-bold text-green-600 mb-1">{totalFees.toFixed(2)} €</div>
-            <div className="text-xs font-medium text-green-700">Gebühren gesamt</div>
+            <div className="text-2xl font-bold text-green-600 mb-1">{total.toFixed(2)} €</div>
+            <div className="text-xs font-medium text-green-700">Gesamtpreis (Brutto)</div>
           </div>
         </div>
 
