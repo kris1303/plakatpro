@@ -86,7 +86,7 @@ export async function GET(
         {},
         { text: totalQuantity.toString(), style: "tableFooter", bold: true, alignment: "center" },
         {},
-        { text: `${totalFees.toFixed(2)} €`, style: "tableFooter", bold: true, alignment: "right" },
+        { text: `${costCityFees.toFixed(2)} €`, style: "tableFooter", bold: true, alignment: "right" },
       ],
     ];
 
@@ -189,8 +189,8 @@ export async function GET(
                 },
                 {
                   stack: [
-                    { text: "GEBÜHREN GESAMT", style: "summaryLabel", alignment: "center" },
-                    { text: `${totalFees.toFixed(2)} €`, style: "summaryValue", alignment: "center" },
+                    { text: "GEBÜHREN KOMMUNEN", style: "summaryLabel", alignment: "center" },
+                    { text: `${costCityFees.toFixed(2)} €`, style: "summaryValue", alignment: "center" },
                   ],
                   fillColor: "#eff6ff",
                   border: [false, true, true, true],
