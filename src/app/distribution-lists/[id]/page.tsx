@@ -329,7 +329,7 @@ export default function DistributionListDetailPage() {
                   </td>
                   <td></td>
                   <td className="px-4 py-3 text-right text-sm font-semibold text-gray-900">
-                    {totalFees.toFixed(2)} €
+                    {costCityFees.toFixed(2)} €
                   </td>
                 </tr>
               </tfoot>
