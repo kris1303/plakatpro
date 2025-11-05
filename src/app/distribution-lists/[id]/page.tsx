@@ -158,9 +158,23 @@ export default function DistributionListDetailPage() {
 
   const config = statusConfig[distributionList.status as keyof typeof statusConfig];
   const totalQuantity = distributionList.items.reduce((sum, item) => sum + item.quantity, 0);
-  const totalFees = distributionList.items.reduce((sum, item) => sum + (item.fee || 0), 0);
   const quantityA1 = distributionList.items.filter(i => i.posterSize === 'A1').reduce((sum, i) => sum + i.quantity, 0);
   const quantityA0 = distributionList.items.filter(i => i.posterSize === 'A0').reduce((sum, i) => sum + i.quantity, 0);
+  
+  // Preise
+  const PRICE_A1 = 3.00;
+  const PRICE_A0 = 6.00;
+  const PRICE_PER_APPLICATION = 5.00;
+  const VAT_RATE = 0.19;
+  
+  // Kostenberechnung
+  const costA1 = quantityA1 * PRICE_A1;
+  const costA0 = quantityA0 * PRICE_A0;
+  const costApplications = distributionList.items.length * PRICE_PER_APPLICATION;
+  const costCityFees = distributionList.items.reduce((sum, item) => sum + (item.fee || 0), 0);
+  const subtotal = costA1 + costA0 + costApplications + costCityFees;
+  const vat = subtotal * VAT_RATE;
+  const total = subtotal + vat;
 
   return (
     <AppLayout>
@@ -320,6 +334,89 @@ export default function DistributionListDetailPage() {
                 </tr>
               </tfoot>
             </table>
+          </div>
+        </div>
+
+        {/* Kostenübersicht */}
+        <div className="card mb-6">
+          <h2 className="text-lg font-semibold text-gray-900 mb-4">
+            💰 Kostenübersicht
+          </h2>
+
+          <div className="space-y-3">
+            {/* Plakat-Kosten A1 */}
+            <div className="flex justify-between items-center py-2 border-b border-gray-100">
+              <div className="text-sm text-gray-700">
+                <span className="font-medium">{quantityA1}x A1 Plakate</span>
+                <span className="text-gray-500 ml-2">à {PRICE_A1.toFixed(2)} €</span>
+              </div>
+              <div className="text-sm font-semibold text-gray-900">
+                {costA1.toFixed(2)} €
+              </div>
+            </div>
+
+            {/* Plakat-Kosten A0 */}
+            <div className="flex justify-between items-center py-2 border-b border-gray-100">
+              <div className="text-sm text-gray-700">
+                <span className="font-medium">{quantityA0}x A0 Plakate</span>
+                <span className="text-gray-500 ml-2">à {PRICE_A0.toFixed(2)} €</span>
+              </div>
+              <div className="text-sm font-semibold text-gray-900">
+                {costA0.toFixed(2)} €
+              </div>
+            </div>
+
+            {/* Antragsgebühren */}
+            <div className="flex justify-between items-center py-2 border-b border-gray-100">
+              <div className="text-sm text-gray-700">
+                <span className="font-medium">{distributionList.items.length}x Anträge bei Kommunen</span>
+                <span className="text-gray-500 ml-2">à {PRICE_PER_APPLICATION.toFixed(2)} €</span>
+              </div>
+              <div className="text-sm font-semibold text-gray-900">
+                {costApplications.toFixed(2)} €
+              </div>
+            </div>
+
+            {/* Kommunen-Gebühren */}
+            <div className="flex justify-between items-center py-2 border-b border-gray-100">
+              <div className="text-sm text-gray-700">
+                <span className="font-medium">Gebühren der Kommunen</span>
+                <span className="text-gray-500 ml-2">({distributionList.items.length} Kommunen)</span>
+              </div>
+              <div className="text-sm font-semibold text-gray-900">
+                {costCityFees.toFixed(2)} €
+              </div>
+            </div>
+
+            {/* Zwischensumme */}
+            <div className="flex justify-between items-center py-3 bg-gray-50 -mx-4 px-4">
+              <div className="text-sm font-semibold text-gray-700">
+                Zwischensumme (Netto)
+              </div>
+              <div className="text-base font-bold text-gray-900">
+                {subtotal.toFixed(2)} €
+              </div>
+            </div>
+
+            {/* MwSt */}
+            <div className="flex justify-between items-center py-2">
+              <div className="text-sm text-gray-700">
+                MwSt. (19%)
+              </div>
+              <div className="text-sm font-semibold text-gray-900">
+                {vat.toFixed(2)} €
+              </div>
+            </div>
+
+            {/* Gesamtsumme */}
+            <div className="flex justify-between items-center py-4 bg-green-50 border-t-2 border-green-200 -mx-4 px-4">
+              <div className="text-lg font-bold text-gray-900">
+                Gesamtsumme (Brutto)
+              </div>
+              <div className="text-2xl font-bold text-green-600">
+                {total.toFixed(2)} €
+              </div>
+            </div>
           </div>
         </div>
 
