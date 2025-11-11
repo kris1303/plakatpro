@@ -19,7 +19,15 @@ export default function EditCityPage() {
     fee: "",
     maxQty: "",
     maxSize: "",
+    requiresPermitForm: false,
   });
+  const [permitForm, setPermitForm] = useState<{
+    id: string;
+    fileName: string;
+    contentType: string;
+    size: number;
+  } | null>(null);
+  const [uploadingPermitForm, setUploadingPermitForm] = useState(false);
 
   useEffect(() => {
     const loadCity = async () => {
@@ -37,7 +45,18 @@ export default function EditCityPage() {
           fee: city.fee?.toString() || "",
           maxQty: city.maxQty?.toString() || "",
           maxSize: city.maxSize || "",
+          requiresPermitForm: city.requiresPermitForm || false,
         });
+        if (city.permitFormAsset) {
+          setPermitForm({
+            id: city.permitFormAsset.id,
+            fileName: city.permitFormAsset.fileName,
+            contentType: city.permitFormAsset.contentType,
+            size: city.permitFormAsset.size,
+          });
+        } else {
+          setPermitForm(null);
+        }
       } catch (error) {
         console.error("Fehler beim Laden:", error);
         alert("Fehler beim Laden der Kommune");
@@ -67,6 +86,8 @@ export default function EditCityPage() {
           fee: formData.fee ? parseFloat(formData.fee) : null,
           maxQty: formData.maxQty ? parseInt(formData.maxQty) : null,
           maxSize: formData.maxSize || null,
+          requiresPermitForm: formData.requiresPermitForm,
+          permitFormAssetId: permitForm?.id || null,
         }),
       });
 
@@ -80,6 +101,37 @@ export default function EditCityPage() {
       alert("Fehler beim Aktualisieren der Kommune");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handlePermitFormUpload = async (file: File) => {
+    setUploadingPermitForm(true);
+    try {
+      const formDataUpload = new FormData();
+      formDataUpload.append("file", file);
+      formDataUpload.append("category", "permit-forms");
+
+      const res = await fetch("/api/uploads", {
+        method: "POST",
+        body: formDataUpload,
+      });
+
+      if (!res.ok) {
+        throw new Error("Upload fehlgeschlagen");
+      }
+
+      const data = await res.json();
+      setPermitForm({
+        id: data.id,
+        fileName: data.fileName,
+        contentType: data.contentType,
+        size: data.size,
+      });
+    } catch (error) {
+      console.error("Upload-Fehler:", error);
+      alert("Upload des Formulars fehlgeschlagen.");
+    } finally {
+      setUploadingPermitForm(false);
     }
   };
 
@@ -217,6 +269,83 @@ export default function EditCityPage() {
                   <option value="A0">A0</option>
                   <option value="120x180">120x180 cm</option>
                 </select>
+              </div>
+            </div>
+          </div>
+
+          <div className="card">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">
+              📝 Formulare der Kommune
+            </h2>
+
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <label className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    checked={formData.requiresPermitForm}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        requiresPermitForm: e.target.checked,
+                      })
+                    }
+                    className="h-4 w-4 text-blue-600 border-gray-300 rounded"
+                  />
+                  <span className="text-sm text-gray-700">
+                    Kommune verlangt eigenes Formular im Antrag
+                  </span>
+                </label>
+                {formData.requiresPermitForm && (
+                  <span className="text-xs text-gray-500">
+                    Wird beim Antrag automatisch angehängt
+                  </span>
+                )}
+              </div>
+
+              <div className="border border-dashed border-gray-300 rounded-lg p-4 bg-gray-50">
+                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                  <div>
+                    <div className="text-sm font-medium text-gray-800">
+                      {permitForm ? "Aktuelles Formular" : "Kein Formular hinterlegt"}
+                    </div>
+                    {permitForm && (
+                      <div className="text-xs text-gray-500">
+                        {permitForm.fileName} · {(permitForm.size / 1024).toFixed(1)} KB
+                      </div>
+                    )}
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <label className="btn-secondary cursor-pointer">
+                      {uploadingPermitForm ? "Lade hoch..." : permitForm ? "Formular ersetzen" : "Formular hochladen"}
+                      <input
+                        type="file"
+                        accept="application/pdf"
+                        className="hidden"
+                        onChange={(event) => {
+                          const file = event.target.files?.[0];
+                          if (file) {
+                            if (file.size > 5 * 1024 * 1024) {
+                              alert("Bitte maximal 5 MB große PDF-Dateien hochladen.");
+                              return;
+                            }
+                            handlePermitFormUpload(file);
+                          }
+                        }}
+                        disabled={uploadingPermitForm}
+                      />
+                    </label>
+                    {permitForm && (
+                      <button
+                        type="button"
+                        className="btn-ghost text-sm"
+                        onClick={() => setPermitForm(null)}
+                      >
+                        Entfernen
+                      </button>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           </div>

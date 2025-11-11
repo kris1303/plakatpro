@@ -14,6 +14,11 @@ type City = {
   name: string;
   postalCode: string | null;
   fee: number | null;
+  requiresPermitForm: boolean;
+  permitFormAsset?: {
+    id: string;
+    fileName: string;
+  } | null;
 };
 
 type DistributionItem = {
@@ -25,6 +30,9 @@ type DistributionItem = {
   posterSize: string;
   fee: number;
   distanceKm: number;
+  includePosterImage: boolean;
+  includePermitForm: boolean;
+  cityHasPermitForm: boolean;
 };
 
 type DistributionList = {
@@ -42,12 +50,25 @@ type DistributionList = {
     posterSize: string;
     distanceKm: number | null;
     fee: number | null;
+    includePosterImage: boolean;
+    includePermitForm: boolean;
     city: {
       id: string;
       name: string;
       postalCode: string | null;
+      requiresPermitForm: boolean;
+      permitFormAsset?: {
+        id: string;
+        fileName: string;
+      } | null;
     };
   }>;
+  posterImageAsset?: {
+    id: string;
+    fileName: string;
+    contentType: string;
+    size: number;
+  } | null;
 };
 
 export default function EditDistributionListPage() {
@@ -79,6 +100,13 @@ export default function EditDistributionListPage() {
     fee: 0,
     distanceKm: 0,
   });
+  const [posterImage, setPosterImage] = useState<{
+    id: string;
+    fileName: string;
+    contentType: string;
+    size: number;
+  } | null>(null);
+  const [uploadingPosterImage, setUploadingPosterImage] = useState(false);
 
   useEffect(() => {
     fetchClients();
@@ -121,17 +149,36 @@ export default function EditDistributionListPage() {
         notes: data.notes || "",
       });
 
+      if (data.posterImageAsset) {
+        setPosterImage({
+          id: data.posterImageAsset.id,
+          fileName: data.posterImageAsset.fileName,
+          contentType: data.posterImageAsset.contentType,
+          size: data.posterImageAsset.size,
+        });
+      } else {
+        setPosterImage(null);
+      }
+
       setItems(
-        data.items.map((item) => ({
-          id: item.id,
-          cityId: item.city.id,
-          cityName: item.city.name,
-          postalCode: item.city.postalCode || "",
-          quantity: item.quantity,
-          posterSize: item.posterSize,
-          fee: item.fee || 0,
-          distanceKm: item.distanceKm || 0,
-        }))
+        data.items.map((item) => {
+          const hasForm = !!item.city.permitFormAsset;
+          return {
+            id: item.id,
+            cityId: item.city.id,
+            cityName: item.city.name,
+            postalCode: item.city.postalCode || "",
+            quantity: item.quantity,
+            posterSize: item.posterSize,
+            fee: item.fee || 0,
+            distanceKm: item.distanceKm || 0,
+            includePosterImage: item.includePosterImage || false,
+            includePermitForm: hasForm
+              ? item.includePermitForm ?? item.city.requiresPermitForm ?? false
+              : false,
+            cityHasPermitForm: hasForm,
+          };
+        })
       );
     } catch (error) {
       console.error("Fehler:", error);
@@ -197,6 +244,9 @@ export default function EditDistributionListPage() {
       posterSize: itemForm.posterSize,
       fee: itemForm.fee || city.fee || 0,
       distanceKm: calculatedDistance,
+      includePosterImage: false,
+      includePermitForm: city.permitFormAsset ? city.requiresPermitForm ?? false : false,
+      cityHasPermitForm: !!city.permitFormAsset,
     };
 
     setItems([...items, newItem]);
@@ -235,7 +285,8 @@ export default function EditDistributionListPage() {
           eventDate: formData.eventDate ? new Date(formData.eventDate).toISOString() : null,
           startDate: new Date(formData.startDate).toISOString(),
           endDate: new Date(formData.endDate).toISOString(),
-          items: items.map(({ id, ...item }) => item), // Remove id from items
+          posterImageAssetId: posterImage?.id || null,
+          items: items.map(({ id, ...item }) => item),
         }),
       });
 
@@ -391,6 +442,90 @@ export default function EditDistributionListPage() {
             </div>
           </div>
 
+          {/* Posterbild */}
+          <div className="card">
+            <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-semibold text-gray-900">🖼️ Plakatbild</h2>
+                <p className="text-sm text-gray-600">
+                  Optionales Motiv, das auf Wunsch einzelner Kommunen als Anhang mitgeschickt wird.
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                <label className="btn-secondary cursor-pointer">
+                  {uploadingPosterImage ? "Lade hoch..." : posterImage ? "Bild ersetzen" : "Bild hochladen"}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={async (event) => {
+                      const file = event.target.files?.[0];
+                      if (!file) return;
+                      if (file.size > 6 * 1024 * 1024) {
+                        alert("Bitte nur Bilder bis maximal 6 MB hochladen.");
+                        return;
+                      }
+                      setUploadingPosterImage(true);
+                      try {
+                        const formDataUpload = new FormData();
+                        formDataUpload.append("file", file);
+                        formDataUpload.append("category", "poster-images");
+
+                        const res = await fetch("/api/uploads", {
+                          method: "POST",
+                          body: formDataUpload,
+                        });
+
+                        if (!res.ok) {
+                          throw new Error("Upload fehlgeschlagen");
+                        }
+
+                        const data = await res.json();
+                        setPosterImage({
+                          id: data.id,
+                          fileName: data.fileName,
+                          contentType: data.contentType,
+                          size: data.size,
+                        });
+                      } catch (error) {
+                        console.error("Upload-Fehler:", error);
+                        alert("Upload des Plakatbildes fehlgeschlagen.");
+                      } finally {
+                        setUploadingPosterImage(false);
+                      }
+                    }}
+                    disabled={uploadingPosterImage}
+                  />
+                </label>
+                {posterImage && (
+                  <button
+                    type="button"
+                    className="btn-ghost text-sm"
+                    onClick={() => {
+                      setPosterImage(null);
+                      setItems((prev) =>
+                        prev.map((entry) => ({
+                          ...entry,
+                          includePosterImage: false,
+                        }))
+                      );
+                    }}
+                  >
+                    Entfernen
+                  </button>
+                )}
+              </div>
+            </div>
+            {posterImage && (
+              <div className="mt-4 rounded-md border border-gray-200 bg-gray-50 p-4 text-sm text-gray-700">
+                <div className="font-medium">{posterImage.fileName}</div>
+                <div className="text-xs text-gray-500">
+                  {(posterImage.size / 1024).toFixed(1)} KB · {posterImage.contentType}
+                </div>
+              </div>
+            )}
+          </div>
+
           {/* Kommunen hinzufügen */}
           <div className="card">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
@@ -523,6 +658,12 @@ export default function EditDistributionListPage() {
                       <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600">Anzahl</th>
                       <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600">Größe</th>
                       <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600">Gebühr (€)</th>
+                      <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600">
+                        Posterbild anhängen
+                      </th>
+                      <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600">
+                        Formular anhängen
+                      </th>
                       <th className="px-4 py-3"></th>
                     </tr>
                   </thead>
@@ -578,6 +719,33 @@ export default function EditDistributionListPage() {
                           />
                         </td>
                         <td className="px-4 py-3 text-center">
+                          <input
+                            type="checkbox"
+                            className="h-4 w-4 text-blue-600 rounded border-gray-300"
+                            checked={item.includePosterImage}
+                            onChange={(e) => updateItem(item.cityId, "includePosterImage", e.target.checked)}
+                            disabled={!posterImage}
+                          />
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          <input
+                            type="checkbox"
+                            className="h-4 w-4 text-blue-600 rounded border-gray-300"
+                            checked={item.includePermitForm && item.cityHasPermitForm}
+                            onChange={(e) =>
+                              updateItem(
+                                item.cityId,
+                                "includePermitForm",
+                                e.target.checked && item.cityHasPermitForm
+                              )
+                            }
+                            disabled={!item.cityHasPermitForm}
+                          />
+                          {!item.cityHasPermitForm && (
+                            <div className="text-[10px] text-gray-400 mt-1">kein Formular hinterlegt</div>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-center">
                           <button
                             type="button"
                             onClick={() => removeItem(item.cityId)}
@@ -601,6 +769,8 @@ export default function EditDistributionListPage() {
                       <td className="px-4 py-3 text-right text-sm font-semibold text-gray-900">
                         {totalFees.toFixed(2)} €
                       </td>
+                      <td></td>
+                      <td></td>
                       <td></td>
                     </tr>
                   </tfoot>

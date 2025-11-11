@@ -17,6 +17,26 @@ enum PermitStatus {
   rejected
 }
 
+enum PermitResponseType {
+  approved
+  rejected
+  info_needed
+  other
+}
+
+enum EmailDirection {
+  outbound
+  inbound
+}
+
+enum EmailStatus {
+  queued
+  sent
+  delivered
+  failed
+  received
+}
+
 enum RouteStatus {
   planned
   in_progress
@@ -87,6 +107,7 @@ model Campaign {
   googlePhotosShareLink String?
   createdAt             DateTime          @default(now())
   updatedAt             DateTime          @updatedAt
+  archivedAt            DateTime?
 }
 
 model DistributionList {
@@ -107,6 +128,9 @@ model DistributionList {
   updatedAt    DateTime               @updatedAt
   sentAt       DateTime? // Wann an Kunde versendet
   acceptedAt   DateTime? // Wann vom Kunden angenommen
+  posterImageAssetId String?
+  posterImageAsset   FileAsset?            @relation("PosterImageAsset", fields: [posterImageAssetId], references: [id])
+  archivedAt   DateTime?
 }
 
 model DistributionListItem {
@@ -119,8 +143,15 @@ model DistributionListItem {
   posterSize         String // Größe (A1, A0, etc.)
   distanceKm         Float? // Entfernung zum Eventort
   fee                Float? // Gebühr (kopiert von City oder custom)
+  includePosterImage Boolean          @default(false)
+  includePermitForm  Boolean          @default(false)
+  permitStatus       PermitStatus     @default(draft)
+  sentAt             DateTime?
+  responseAt         DateTime?
+  responseType       PermitResponseType?
   createdAt          DateTime         @default(now())
   updatedAt          DateTime         @updatedAt
+  emails             PermitEmail[]
 }
 
 model City {
@@ -136,11 +167,14 @@ model City {
   placeId              String? // Google Place ID
   lat                  Float?
   lng                  Float?
-  permits              Permit[]
-  routeStops           RouteStop[]
+  permits               Permit[]
+  routeStops            RouteStop[]
   distributionListItems DistributionListItem[]
-  createdAt            DateTime               @default(now())
-  updatedAt            DateTime               @updatedAt
+  requiresPermitForm    Boolean               @default(false)
+  permitFormAssetId     String?
+  permitFormAsset       FileAsset?            @relation("PermitFormAsset", fields: [permitFormAssetId], references: [id])
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
 }
 
 model Permit {
@@ -154,8 +188,12 @@ model Permit {
   requestedAt DateTime     @default(now())
   decidedAt   DateTime?
   notes       String?
+  sentAt      DateTime?
+  responseAt  DateTime?
+  responseType PermitResponseType?
   createdAt   DateTime     @default(now())
   updatedAt   DateTime     @updatedAt
+  emails      PermitEmail[]
 }
 
 model PosterFormat {
@@ -236,6 +274,27 @@ model Placement {
   updatedAt  DateTime        @updatedAt
 }
 
+model PermitEmail {
+  id                      String                @id @default(cuid())
+  distributionListItemId  String?
+  distributionListItem    DistributionListItem? @relation(fields: [distributionListItemId], references: [id], onDelete: Cascade)
+  permitId                String?
+  permit                  Permit?               @relation(fields: [permitId], references: [id], onDelete: Cascade)
+  direction               EmailDirection
+  status                  EmailStatus           @default(queued)
+  subject                 String
+  bodyText                String?
+  bodyHtml                String?
+  attachments             Json?
+  providerMessageId       String?
+  messageId               String?
+  threadId                String?
+  sentAt                  DateTime?
+  receivedAt              DateTime?
+  createdAt               DateTime              @default(now())
+  updatedAt               DateTime              @updatedAt
+}
+
 model Photo {
   id                String      @id @default(cuid())
   campaignId        String
@@ -272,4 +331,15 @@ model Reminder {
   doneAt     DateTime?
   createdAt  DateTime  @default(now())
   updatedAt  DateTime  @updatedAt
+}
+
+model FileAsset {
+  id          String   @id @default(cuid())
+  key         String   @unique
+  fileName    String
+  contentType String
+  size        Int
+  createdAt   DateTime @default(now())
+  posterUsage DistributionList[] @relation("PosterImageAsset")
+  permitForms City[]             @relation("PermitFormAsset")
 }

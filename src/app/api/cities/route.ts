@@ -8,6 +8,9 @@ export async function GET(req: NextRequest) {
   try {
     const cities = await prisma.city.findMany({
       orderBy: { name: "asc" },
+      include: {
+        permitFormAsset: true,
+      },
     });
 
     return NextResponse.json(cities);
@@ -26,7 +29,19 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   try {
     const data = await req.json();
-    const { name, email, feeModel, fee, maxQty, maxSize, placeId, lat, lng } = data;
+    const {
+      name,
+      email,
+      feeModel,
+      fee,
+      maxQty,
+      maxSize,
+      placeId,
+      lat,
+      lng,
+      requiresPermitForm,
+      permitFormAssetId,
+    } = data;
 
     if (!name) {
       return NextResponse.json(
@@ -46,6 +61,11 @@ export async function POST(req: NextRequest) {
         placeId,
         lat,
         lng,
+        requiresPermitForm: !!requiresPermitForm,
+        permitFormAssetId: permitFormAssetId || null,
+      },
+      include: {
+        permitFormAsset: true,
       },
     });
 

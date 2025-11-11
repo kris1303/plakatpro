@@ -25,14 +25,16 @@ GOOGLE_CLIENT_SECRET=GOCSPX-...
 GOOGLE_REDIRECT_URI=https://DEINE-APP.vercel.app/api/auth/google/callback
 
 # ====================
-# SMTP / E-MAIL (Optional)
+# AWS SES (E-Mail Versand & Empfang)
 # ====================
 
-SMTP_HOST=smtp.mailbox.org
-SMTP_PORT=587
-SMTP_USER=info@deine-domain.de
-SMTP_PASS=dein-smtp-passwort
-SMTP_FROM="Werbeinsel <info@deine-domain.de>"
+AWS_REGION=eu-central-1
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+SES_FROM_ADDRESS=antraege@antraege.werbeinsel.de
+SES_CONFIG_SET=plakatpro-mail
+PERMIT_ATTACHMENT_BUCKET=werbeinsel-permit-attachments
+INBOUND_MAIL_BUCKET=werbeinsel-inbound-mails
 
 # ====================
 # HINWEISE

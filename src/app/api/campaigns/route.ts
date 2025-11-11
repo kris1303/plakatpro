@@ -9,10 +9,34 @@ export async function GET(req: NextRequest) {
     const searchParams = req.nextUrl.searchParams;
     const status = searchParams.get("status");
     const clientId = searchParams.get("clientId");
+    const scope = searchParams.get("scope") || "active";
+
+    const now = new Date();
 
     const where: any = {};
-    if (status) where.status = status;
-    if (clientId) where.clientId = clientId;
+    if (status) {
+      where.status = status;
+    }
+    if (clientId) {
+      where.clientId = clientId;
+    }
+
+    switch (scope) {
+      case "past":
+        where.archivedAt = null;
+        where.endDate = { lt: now };
+        break;
+      case "archived":
+        where.archivedAt = { not: null };
+        break;
+      case "all":
+        break;
+      case "active":
+      default:
+        where.archivedAt = null;
+        where.endDate = { gte: now };
+        break;
+    }
 
     const campaigns = await prisma.campaign.findMany({
       where,
@@ -55,7 +79,7 @@ export async function POST(req: NextRequest) {
       notes,
     } = data;
 
-    if (!eventName || !eventAddress || !startDate || !endDate) {
+    if (!eventName || !eventAddress || !startDate || !endDate || !clientId) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
@@ -69,7 +93,7 @@ export async function POST(req: NextRequest) {
         eventDate: eventDate ? new Date(eventDate) : null,
         startDate: new Date(startDate),
         endDate: new Date(endDate),
-        clientId: clientId || null,
+        clientId,
         notes,
         status: "backlog",
       },

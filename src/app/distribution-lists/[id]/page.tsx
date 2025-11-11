@@ -25,10 +25,31 @@ type DistributionList = {
     posterSize: string;
     distanceKm: number | null;
     fee: number | null;
+    includePosterImage: boolean;
+    includePermitForm: boolean;
+    permitStatus: string;
+    sentAt: string | null;
+    responseAt: string | null;
+    responseType: string | null;
+    emails: Array<{
+      id: string;
+      direction: string;
+      status: string;
+      subject: string;
+      createdAt: string;
+      sentAt: string | null;
+      receivedAt: string | null;
+    }>;
     city: {
       id: string;
       name: string;
       postalCode: string | null;
+      email: string | null;
+      requiresPermitForm: boolean;
+      permitFormAsset?: {
+        id: string;
+        fileName: string;
+      } | null;
     };
   }>;
   campaign: {
@@ -38,6 +59,12 @@ type DistributionList = {
   sentAt: string | null;
   acceptedAt: string | null;
   createdAt: string;
+  posterImageAsset?: {
+    id: string;
+    fileName: string;
+    contentType: string;
+    size: number;
+  } | null;
 };
 
 export default function DistributionListDetailPage() {
@@ -48,6 +75,8 @@ export default function DistributionListDetailPage() {
   const [distributionList, setDistributionList] = useState<DistributionList | null>(null);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
+  const [sendingClient, setSendingClient] = useState(false);
+  const [sendingApplications, setSendingApplications] = useState(false);
 
   useEffect(() => {
     fetchDistributionList();
@@ -132,6 +161,79 @@ export default function DistributionListDetailPage() {
     }
   };
 
+  const handleSendApplications = async () => {
+    if (!confirm("Alle Anträge per E-Mail an die Kommunen senden?")) {
+      return;
+    }
+
+    setSendingApplications(true);
+    try {
+      const res = await fetch(`/api/distribution-lists/${id}/send`, {
+        method: "POST",
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data?.error || "Versand fehlgeschlagen");
+      }
+
+      const sentCount = data.results?.filter((result: any) => result.status === "sent").length || 0;
+      const failedCount = data.results?.filter((result: any) => result.status === "failed").length || 0;
+      const skippedCount = data.results?.filter((result: any) => result.status === "skipped").length || 0;
+
+      alert(
+        `Versand abgeschlossen:\n✔️ Erfolgreich: ${sentCount}\n⚠️ Übersprungen: ${skippedCount}\n❌ Fehlgeschlagen: ${failedCount}`
+      );
+
+      await fetchDistributionList();
+    } catch (error) {
+      console.error("Fehler beim Versenden der Anträge:", error);
+      alert("Fehler beim Versenden der Anträge. Details in der Konsole.");
+    } finally {
+      setSendingApplications(false);
+    }
+  };
+
+  const handleSendToClient = async () => {
+    if (!distributionList) {
+      return;
+    }
+
+    if (!distributionList.client.email) {
+      alert("Für den Kunden ist keine E-Mail-Adresse hinterlegt.");
+      return;
+    }
+
+    if (
+      !confirm(
+        `Verteilerliste an ${distributionList.client.name} (${distributionList.client.email}) senden?`
+      )
+    ) {
+      return;
+    }
+
+    setSendingClient(true);
+    try {
+      const res = await fetch(`/api/distribution-lists/${id}/send-client`, {
+        method: "POST",
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data?.error || "E-Mail Versand fehlgeschlagen");
+      }
+
+      alert("E-Mail an den Kunden wurde versendet.");
+      await fetchDistributionList();
+    } catch (error) {
+      console.error("Fehler beim Versand an Kunde:", error);
+      alert("Versand an den Kunden ist fehlgeschlagen. Details siehe Konsole.");
+    } finally {
+      setSendingClient(false);
+    }
+  };
+
   if (loading) {
     return (
       <AppLayout>
@@ -160,6 +262,18 @@ export default function DistributionListDetailPage() {
   const totalQuantity = distributionList.items.reduce((sum, item) => sum + item.quantity, 0);
   const quantityA1 = distributionList.items.filter(i => i.posterSize === 'A1').reduce((sum, i) => sum + i.quantity, 0);
   const quantityA0 = distributionList.items.filter(i => i.posterSize === 'A0').reduce((sum, i) => sum + i.quantity, 0);
+  const permitStatusConfig: Record<string, { label: string; classes: string }> = {
+    draft: { label: "Entwurf", classes: "bg-gray-100 text-gray-700 border border-gray-200" },
+    sent: { label: "Versendet", classes: "bg-blue-100 text-blue-700 border border-blue-200" },
+    requested: { label: "Angefragt", classes: "bg-sky-100 text-sky-700 border border-sky-200" },
+    info_needed: { label: "Rückfrage", classes: "bg-amber-100 text-amber-700 border border-amber-200" },
+    approved: { label: "Genehmigt", classes: "bg-green-100 text-green-700 border border-green-200" },
+    approved_with_conditions: {
+      label: "Genehmigt (mit Auflagen)",
+      classes: "bg-lime-100 text-lime-700 border border-lime-200",
+    },
+    rejected: { label: "Abgelehnt", classes: "bg-red-100 text-red-700 border border-red-200" },
+  };
   
   // Preise
   const PRICE_A1 = 3.00;
@@ -217,6 +331,20 @@ export default function DistributionListDetailPage() {
               className="btn-secondary"
             >
               📄 PDF Download
+            </button>
+            <button
+              onClick={handleSendApplications}
+              disabled={sendingApplications}
+              className="btn-primary"
+            >
+              {sendingApplications ? "Versand läuft…" : "📬 Anträge an Kommunen senden"}
+            </button>
+            <button
+              onClick={handleSendToClient}
+              disabled={sendingClient}
+              className="btn-secondary"
+            >
+              {sendingClient ? "Wird gesendet…" : "📧 Verteilerliste an Kunden senden"}
             </button>
           </div>
         </div>
@@ -285,6 +413,50 @@ export default function DistributionListDetailPage() {
           </div>
         </div>
 
+        {/* Attachment Overview */}
+        {(distributionList.posterImageAsset ||
+          distributionList.items.some(
+            (item) =>
+              (item.includePosterImage && distributionList.posterImageAsset) ||
+              (item.includePermitForm && item.city.permitFormAsset)
+          )) && (
+          <div className="card mb-6">
+            <h2 className="text-lg font-semibold text-gray-900 mb-4">📎 Anhänge für Kommunen</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="rounded border border-gray-200 p-4 bg-gray-50">
+                <div className="text-sm font-semibold text-gray-800 mb-1">Plakatbild</div>
+                {distributionList.posterImageAsset ? (
+                  <>
+                    <div className="text-sm text-gray-700">
+                      {distributionList.posterImageAsset.fileName}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {(distributionList.posterImageAsset.size / 1024).toFixed(1)} KB ·{" "}
+                      {distributionList.posterImageAsset.contentType}
+                    </div>
+                    <div className="text-xs text-blue-700 mt-2">
+                      Wird an {distributionList.items.filter((item) => item.includePosterImage).length} Kommune(n)
+                      angehängt.
+                    </div>
+                  </>
+                ) : (
+                  <div className="text-sm text-gray-500">Kein Bild hinterlegt</div>
+                )}
+              </div>
+              <div className="rounded border border-gray-200 p-4 bg-gray-50">
+                <div className="text-sm font-semibold text-gray-800 mb-1">Kommunale Formulare</div>
+                <div className="text-sm text-gray-700">
+                  {distributionList.items.filter((item) => item.includePermitForm && item.city.permitFormAsset).length}{" "}
+                  Kommune(n) erhalten ein individuelles Formular.
+                </div>
+                <div className="text-xs text-gray-500 mt-1">
+                  Städte ohne hinterlegtes Formular werden hier übersprungen.
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Table */}
         <div className="card mb-6">
           <h2 className="text-lg font-semibold text-gray-900 mb-4">
@@ -300,7 +472,10 @@ export default function DistributionListDetailPage() {
                   <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600">Entfernung (km)</th>
                   <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600">Anzahl Plakate</th>
                   <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600">Größe</th>
+                  <th className="px-4 py-3 text-left text-xs font-semibold text-gray-600">Status</th>
                   <th className="px-4 py-3 text-right text-xs font-semibold text-gray-600">Gebühr (€)</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600">Posterbild</th>
+                  <th className="px-4 py-3 text-center text-xs font-semibold text-gray-600">Formular</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -313,8 +488,39 @@ export default function DistributionListDetailPage() {
                     </td>
                     <td className="px-4 py-3 text-center text-sm text-gray-900">{item.quantity}</td>
                     <td className="px-4 py-3 text-center text-sm text-gray-900">{item.posterSize}</td>
+                    <td className="px-4 py-3 text-sm">
+                      <div className="flex flex-col gap-1">
+                        <span
+                          className={`inline-flex items-center gap-1 px-2 py-1 text-xs font-semibold rounded ${
+                            permitStatusConfig[item.permitStatus]?.classes ||
+                            "bg-gray-100 text-gray-700 border border-gray-200"
+                          }`}
+                        >
+                          {permitStatusConfig[item.permitStatus]?.label || item.permitStatus}
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {item.sentAt ? `Gesendet am ${formatDate(item.sentAt)}` : "Noch nicht gesendet"}
+                        </span>
+                        {item.responseAt && (
+                          <span className="text-xs text-gray-500">
+                            Antwort am {formatDate(item.responseAt)}
+                            {item.responseType ? ` (${item.responseType})` : ""}
+                          </span>
+                        )}
+                      </div>
+                    </td>
                     <td className="px-4 py-3 text-right text-sm text-gray-900">
                       {item.fee?.toFixed(2) || "0.00"} €
+                    </td>
+                    <td className="px-4 py-3 text-center text-sm text-gray-700">
+                      {item.includePosterImage && distributionList.posterImageAsset ? "📎 ja" : "–"}
+                    </td>
+                    <td className="px-4 py-3 text-center text-sm text-gray-700">
+                      {item.includePermitForm && item.city.permitFormAsset
+                        ? "📄 ja"
+                        : item.city.requiresPermitForm && !item.city.permitFormAsset
+                        ? "⚠️ fehlt"
+                        : "–"}
                     </td>
                   </tr>
                 ))}
@@ -331,6 +537,8 @@ export default function DistributionListDetailPage() {
                   <td className="px-4 py-3 text-right text-sm font-semibold text-gray-900">
                     {costCityFees.toFixed(2)} €
                   </td>
+                  <td></td>
+                  <td></td>
                 </tr>
               </tfoot>
             </table>
@@ -428,11 +636,13 @@ export default function DistributionListDetailPage() {
             {/* Entwurf -> Versendet */}
             {distributionList.status === "draft" && (
               <button
-                onClick={() => handleStatusChange("sent")}
-                disabled={actionLoading}
+                onClick={handleSendToClient}
+                disabled={sendingClient}
                 className="btn-primary w-full"
               >
-                📧 An Kunde versenden (Status: Versendet)
+                {sendingClient
+                  ? "Versand läuft…"
+                  : "📧 Verteilerliste an Kunden senden"}
               </button>
             )}
 

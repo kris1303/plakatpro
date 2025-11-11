@@ -1,9 +1,43 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const { searchParams } = new URL(request.url);
+    const clientId = searchParams.get("clientId");
+    const status = searchParams.get("status");
+    const scope = searchParams.get("scope") || "active";
+    const now = new Date();
+
+    const where: any = {};
+
+    if (clientId) {
+      where.clientId = clientId;
+    }
+
+    if (status) {
+      where.status = status;
+    }
+
+    switch (scope) {
+      case "past":
+        where.archivedAt = null;
+        where.endDate = { lt: now };
+        break;
+      case "archived":
+        where.archivedAt = { not: null };
+        break;
+      case "all":
+        break;
+      case "active":
+      default:
+        where.archivedAt = null;
+        where.endDate = { gte: now };
+        break;
+    }
+
     const distributionLists = await prisma.distributionList.findMany({
+      where,
       include: {
         client: true,
         items: {
@@ -39,6 +73,13 @@ export async function POST(request: Request) {
       notes,
       items,
     } = body;
+
+    if (!eventName || !eventAddress || !startDate || !endDate || !clientId) {
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      );
+    }
 
     const distributionList = await prisma.distributionList.create({
       data: {

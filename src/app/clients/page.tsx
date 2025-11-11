@@ -10,6 +10,7 @@ export default async function ClientsPage() {
       _count: {
         select: {
           campaigns: true,
+          distributionLists: true,
         },
       },
     },
@@ -39,7 +40,11 @@ export default async function ClientsPage() {
         {/* Clients Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {clients.map((client) => (
-            <div key={client.id} className="card card-hover">
+            <Link
+              href={`/clients/${client.id}`}
+              key={client.id}
+              className="card card-hover block"
+            >
               <h3 className="font-semibold text-gray-900 text-lg mb-3">
                 {client.name}
               </h3>
@@ -48,17 +53,13 @@ export default async function ClientsPage() {
                 {client.email && (
                   <div className="flex items-center gap-2 text-gray-600">
                     <span className="text-gray-400">📧</span>
-                    <a href={`mailto:${client.email}`} className="hover:text-blue-600">
-                      {client.email}
-                    </a>
+                    <span className="hover:text-blue-600">{client.email}</span>
                   </div>
                 )}
                 {client.phone && (
                   <div className="flex items-center gap-2 text-gray-600">
                     <span className="text-gray-400">📞</span>
-                    <a href={`tel:${client.phone}`} className="hover:text-blue-600">
-                      {client.phone}
-                    </a>
+                    <span className="hover:text-blue-600">{client.phone}</span>
                   </div>
                 )}
                 {client.address && (
@@ -69,12 +70,15 @@ export default async function ClientsPage() {
                 )}
               </div>
 
-              <div className="pt-4 border-t border-gray-100">
+              <div className="pt-4 border-t border-gray-100 flex items-center gap-2 flex-wrap">
                 <span className="badge badge-blue">
                   🎯 {client._count.campaigns} Kampagnen
                 </span>
+                <span className="badge badge-gray">
+                  📄 {client._count.distributionLists} Verteilerlisten
+                </span>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
 

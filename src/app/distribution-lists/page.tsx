@@ -5,8 +5,47 @@ import { formatDate } from "@/lib/utils";
 
 export const dynamic = 'force-dynamic';
 
-export default async function DistributionListsPage() {
+interface DistributionListsPageProps {
+  searchParams?: { scope?: string; clientId?: string };
+}
+
+const SCOPE_OPTIONS = [
+  { key: "active", label: "Aktiv" },
+  { key: "past", label: "Abgeschlossen" },
+  { key: "archived", label: "Archiv" },
+  { key: "all", label: "Alle" },
+];
+
+export default async function DistributionListsPage({ searchParams }: DistributionListsPageProps) {
+  const scope = searchParams?.scope ?? "active";
+  const clientId = searchParams?.clientId;
+  const now = new Date();
+
+  const where: any = {};
+
+  if (clientId) {
+    where.clientId = clientId;
+  }
+
+  switch (scope) {
+    case "past":
+      where.archivedAt = null;
+      where.endDate = { lt: now };
+      break;
+    case "archived":
+      where.archivedAt = { not: null };
+      break;
+    case "all":
+      break;
+    case "active":
+    default:
+      where.archivedAt = null;
+      where.endDate = { gte: now };
+      break;
+  }
+
   const distributionLists = await prisma.distributionList.findMany({
+    where,
     include: {
       client: true,
       items: {
@@ -30,18 +69,43 @@ export default async function DistributionListsPage() {
     <AppLayout>
       {/* Header */}
       <div className="bg-white border-b border-gray-200 px-8 py-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-bold text-gray-900 mb-1">
               Verteilerlisten
             </h1>
             <p className="text-sm text-gray-600">
-              Angebote für Kunden - vor der Kampagnen-Erstellung
+              Angebote und Unterlagen je Kunde – nach Status & Zeitraum gefiltert
             </p>
           </div>
           <Link href="/distribution-lists/new" className="btn-primary">
             ➕ Neue Verteilerliste
           </Link>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2 mt-4">
+          {SCOPE_OPTIONS.map((option) => {
+            const isActive = scope === option.key;
+            const query = new URLSearchParams();
+            query.set("scope", option.key);
+            if (clientId) {
+              query.set("clientId", clientId);
+            }
+
+            return (
+              <Link
+                key={option.key}
+                href={`/distribution-lists?${query.toString()}`}
+                className={`px-3 py-1.5 rounded-full text-sm font-medium border transition ${
+                  isActive
+                    ? "bg-blue-600 border-blue-600 text-white shadow-sm"
+                    : "bg-white border-gray-200 text-gray-600 hover:bg-gray-50"
+                }`}
+              >
+                {option.label}
+              </Link>
+            );
+          })}
         </div>
       </div>
 
@@ -78,12 +142,13 @@ export default async function DistributionListsPage() {
               accepted: { bg: "bg-green-50", border: "border-green-200", text: "text-green-700", label: "Angenommen" },
               rejected: { bg: "bg-red-50", border: "border-red-200", text: "text-red-700", label: "Abgelehnt" },
               revised: { bg: "bg-amber-50", border: "border-amber-200", text: "text-amber-700", label: "Überarbeitet" },
-            };
+            } as const;
 
-            const config = statusConfig[list.status];
+            const config = statusConfig[list.status as keyof typeof statusConfig] ?? statusConfig.draft;
             const totalFees = list.items.reduce((sum, item) => sum + (item.fee || 0), 0);
             const quantityA1 = list.items.filter((i: any) => i.posterSize === 'A1').reduce((sum: number, i: any) => sum + i.quantity, 0);
             const quantityA0 = list.items.filter((i: any) => i.posterSize === 'A0').reduce((sum: number, i: any) => sum + i.quantity, 0);
+            const isArchived = !!list.archivedAt;
 
             return (
               <Link
@@ -93,7 +158,7 @@ export default async function DistributionListsPage() {
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
+                    <div className="flex flex-wrap items-center gap-3 mb-2">
                       <h3 className="font-semibold text-gray-900 text-lg">
                         {list.eventName}
                       </h3>
@@ -105,16 +170,27 @@ export default async function DistributionListsPage() {
                           → Kampagne erstellt
                         </span>
                       )}
+                      {isArchived && (
+                        <span className="badge badge-gray">
+                          Archiviert
+                        </span>
+                      )}
                     </div>
                     
                     <p className="text-sm text-gray-600 mb-2">
                       📍 {list.eventAddress}
                     </p>
 
-                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                    <div className="flex flex-wrap items-center gap-2 text-sm text-gray-600">
                       <span>👤 {list.client.name}</span>
                       <span>·</span>
                       <span>📅 {formatDate(list.startDate)} - {formatDate(list.endDate)}</span>
+                      {isArchived && list.archivedAt && (
+                        <>
+                          <span>·</span>
+                          <span>🗃️ {formatDate(list.archivedAt)}</span>
+                        </>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -146,13 +222,13 @@ export default async function DistributionListsPage() {
           <div className="card text-center py-16">
             <div className="text-5xl mb-4 opacity-30">📄</div>
             <h3 className="text-lg font-semibold text-gray-700 mb-2">
-              Noch keine Verteilerlisten
+              Keine Verteilerlisten in dieser Ansicht
             </h3>
             <p className="text-sm text-gray-500 mb-6">
-              Erstellen Sie eine Verteilerliste als Angebot für Ihren Kunden
+              Passen Sie den Filter an oder erstellen Sie eine neue Verteilerliste.
             </p>
             <Link href="/distribution-lists/new" className="btn-primary inline-flex">
-              ➕ Erste Verteilerliste erstellen
+              ➕ Verteilerliste erstellen
             </Link>
           </div>
         )}

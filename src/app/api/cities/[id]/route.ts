@@ -12,6 +12,9 @@ export async function GET(
     const { id } = await params;
     const city = await prisma.city.findUnique({
       where: { id },
+      include: {
+        permitFormAsset: true,
+      },
     });
 
     if (!city) {
@@ -41,7 +44,18 @@ export async function PUT(
   try {
     const { id } = await params;
     const data = await req.json();
-    const { name, postalCode, population, email, feeModel, fee, maxQty, maxSize } = data;
+    const {
+      name,
+      postalCode,
+      population,
+      email,
+      feeModel,
+      fee,
+      maxQty,
+      maxSize,
+      requiresPermitForm,
+      permitFormAssetId,
+    } = data;
 
     if (!name) {
       return NextResponse.json(
@@ -61,6 +75,11 @@ export async function PUT(
         fee,
         maxQty,
         maxSize,
+        requiresPermitForm: !!requiresPermitForm,
+        permitFormAssetId: permitFormAssetId || null,
+      },
+      include: {
+        permitFormAsset: true,
       },
     });
 

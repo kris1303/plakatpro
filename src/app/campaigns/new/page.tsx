@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import AppLayout from "@/components/AppLayout";
 
 interface Client {
@@ -11,6 +11,7 @@ interface Client {
 
 export default function NewCampaignPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
   const [clients, setClients] = useState<Client[]>([]);
   const [posterFile, setPosterFile] = useState<File | null>(null);
@@ -28,13 +29,29 @@ export default function NewCampaignPage() {
     loadClients();
   }, []);
 
+  useEffect(() => {
+    const defaultClientId = searchParams.get("clientId");
+    if (defaultClientId) {
+      setFormData((prev) => ({ ...prev, clientId: defaultClientId }));
+    }
+  }, [searchParams]);
+
   const loadClients = async () => {
     try {
       const response = await fetch("/api/clients");
+      if (!response.ok) {
+        throw new Error(`Fehlercode ${response.status}`);
+      }
       const data = await response.json();
-      setClients(data);
+      if (Array.isArray(data)) {
+        setClients(data);
+      } else {
+        console.error("Unerwartetes Antwortformat für /api/clients:", data);
+        setClients([]);
+      }
     } catch (error) {
       console.error("Error loading clients:", error);
+      setClients([]);
     }
   };
 
@@ -43,6 +60,10 @@ export default function NewCampaignPage() {
     setLoading(true);
 
     try {
+      if (!formData.clientId) {
+        throw new Error("Bitte wählen Sie einen Kunden aus.");
+      }
+
       // Erstelle Kampagne
       const response = await fetch("/api/campaigns", {
         method: "POST",
@@ -51,12 +72,14 @@ export default function NewCampaignPage() {
         },
         body: JSON.stringify({
           ...formData,
-          clientId: formData.clientId || null,
+          clientId: formData.clientId,
         }),
       });
 
       if (!response.ok) {
-        throw new Error("Fehler beim Erstellen der Kampagne");
+        const errorBody = await response.json().catch(() => ({}));
+        const message = (errorBody && errorBody.error) || "Fehler beim Erstellen der Kampagne";
+        throw new Error(message);
       }
 
       const campaign = await response.json();
@@ -76,7 +99,9 @@ export default function NewCampaignPage() {
       router.push("/dashboard");
     } catch (error) {
       console.error("Error:", error);
-      alert("Fehler beim Erstellen der Kampagne");
+      const message =
+        error instanceof Error ? error.message : "Fehler beim Erstellen der Kampagne";
+      alert(message);
     } finally {
       setLoading(false);
     }
@@ -181,6 +206,7 @@ export default function NewCampaignPage() {
                   name="clientId"
                   value={formData.clientId}
                   onChange={handleChange}
+                  required
                   className="input"
                 >
                   <option value="">-- Kein Kunde ausgewählt --</option>

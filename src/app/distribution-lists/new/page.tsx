@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import AppLayout from "@/components/AppLayout";
 
 type Client = {
@@ -29,6 +29,7 @@ type DistributionItem = {
 
 export default function NewDistributionListPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [clients, setClients] = useState<Client[]>([]);
   const [cities, setCities] = useState<City[]>([]);
   const [loading, setLoading] = useState(false);
@@ -58,23 +59,48 @@ export default function NewDistributionListPage() {
     fetchCities();
   }, []);
 
+  useEffect(() => {
+    const defaultClientId = searchParams.get("clientId");
+    if (defaultClientId) {
+      setFormData((prev) => ({ ...prev, clientId: defaultClientId }));
+    }
+  }, [searchParams]);
+
   const fetchClients = async () => {
     try {
       const res = await fetch("/api/clients");
+      if (!res.ok) {
+        throw new Error(`Fehlercode ${res.status}`);
+      }
       const data = await res.json();
-      setClients(data);
+      if (Array.isArray(data)) {
+        setClients(data);
+      } else {
+        console.error("Unerwartetes Antwortformat für /api/clients:", data);
+        setClients([]);
+      }
     } catch (error) {
       console.error("Fehler beim Laden der Kunden:", error);
+      setClients([]);
     }
   };
 
   const fetchCities = async () => {
     try {
       const res = await fetch("/api/cities");
+      if (!res.ok) {
+        throw new Error(`Fehlercode ${res.status}`);
+      }
       const data = await res.json();
-      setCities(data);
+      if (Array.isArray(data)) {
+        setCities(data);
+      } else {
+        console.error("Unerwartetes Antwortformat für /api/cities:", data);
+        setCities([]);
+      }
     } catch (error) {
       console.error("Fehler beim Laden der Kommunen:", error);
+      setCities([]);
     }
   };
 

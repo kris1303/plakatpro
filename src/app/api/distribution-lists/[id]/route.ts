@@ -11,9 +11,19 @@ export async function GET(
       where: { id },
       include: {
         client: true,
+        posterImageAsset: true,
         items: {
           include: {
-            city: true,
+            city: {
+              include: {
+                permitFormAsset: true,
+              },
+            },
+            emails: {
+              orderBy: {
+                createdAt: "desc",
+              },
+            },
           },
           orderBy: {
             city: {
@@ -49,16 +59,35 @@ export async function PATCH(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { status } = body;
+    const { status, archived, notes } = body;
 
-    const updateData: any = { status };
+    const updateData: any = {};
 
-    if (status === "sent" && !updateData.sentAt) {
-      updateData.sentAt = new Date();
+    if (status) {
+      updateData.status = status;
+
+      if (status === "sent" && !updateData.sentAt) {
+        updateData.sentAt = new Date();
+      }
+
+      if (status === "accepted" && !updateData.acceptedAt) {
+        updateData.acceptedAt = new Date();
+      }
     }
 
-    if (status === "accepted" && !updateData.acceptedAt) {
-      updateData.acceptedAt = new Date();
+    if (typeof archived === "boolean") {
+      updateData.archivedAt = archived ? new Date() : null;
+    }
+
+    if (notes !== undefined) {
+      updateData.notes = notes || null;
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return NextResponse.json(
+        { error: "Keine Änderungen übermittelt" },
+        { status: 400 }
+      );
     }
 
     const distributionList = await prisma.distributionList.update({
@@ -69,6 +98,11 @@ export async function PATCH(
         items: {
           include: {
             city: true,
+            emails: {
+              orderBy: {
+                createdAt: "desc",
+              },
+            },
           },
         },
       },
@@ -99,6 +133,7 @@ export async function PUT(
       endDate,
       clientId,
       notes,
+      posterImageAssetId,
       items,
     } = body;
 
@@ -118,6 +153,7 @@ export async function PUT(
         endDate: new Date(endDate),
         clientId,
         notes: notes || null,
+        posterImageAssetId: posterImageAssetId || null,
         items: {
           create: items.map((item: any) => ({
             cityId: item.cityId,
@@ -125,14 +161,21 @@ export async function PUT(
             posterSize: item.posterSize,
             distanceKm: item.distanceKm || null,
             fee: item.fee || null,
+            includePosterImage: !!item.includePosterImage,
+            includePermitForm: !!item.includePermitForm,
           })),
         },
       },
       include: {
         client: true,
+        posterImageAsset: true,
         items: {
           include: {
-            city: true,
+            city: {
+              include: {
+                permitFormAsset: true,
+              },
+            },
           },
         },
       },
