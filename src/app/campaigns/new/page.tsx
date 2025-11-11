@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import AppLayout from "@/components/AppLayout";
 
@@ -10,6 +10,20 @@ interface Client {
 }
 
 export default function NewCampaignPage() {
+  return (
+    <Suspense
+      fallback={
+        <AppLayout>
+          <div className="p-8 text-sm text-gray-500">Lädt…</div>
+        </AppLayout>
+      }
+    >
+      <NewCampaignPageContent />
+    </Suspense>
+  );
+}
+
+function NewCampaignPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [loading, setLoading] = useState(false);
@@ -64,7 +78,6 @@ export default function NewCampaignPage() {
         throw new Error("Bitte wählen Sie einen Kunden aus.");
       }
 
-      // Erstelle Kampagne
       const response = await fetch("/api/campaigns", {
         method: "POST",
         headers: {
@@ -78,13 +91,13 @@ export default function NewCampaignPage() {
 
       if (!response.ok) {
         const errorBody = await response.json().catch(() => ({}));
-        const message = (errorBody && errorBody.error) || "Fehler beim Erstellen der Kampagne";
+        const message =
+          (errorBody && errorBody.error) || "Fehler beim Erstellen der Kampagne";
         throw new Error(message);
       }
 
       const campaign = await response.json();
 
-      // Optional: Plakatvorlage hochladen
       if (posterFile) {
         const uploadFormData = new FormData();
         uploadFormData.append("file", posterFile);
@@ -139,208 +152,209 @@ export default function NewCampaignPage() {
       <div className="p-8">
         <div className="max-w-3xl">
           <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Event-Informationen */}
-          <div className="card">
-            <h2 className="text-base font-semibold mb-6 text-gray-900">
-              Event-Informationen
-            </h2>
+            {/* Event-Informationen */}
+            <div className="card">
+              <h2 className="text-base font-semibold mb-6 text-gray-900">
+                Event-Informationen
+              </h2>
 
-            <div className="space-y-5">
-              <div>
-                <label className="label">
-                  Event-Name / Kampagnen-Titel *
-                </label>
-                <input
-                  type="text"
-                  name="eventName"
-                  value={formData.eventName}
-                  onChange={handleChange}
-                  required
-                  placeholder="z.B. Sommerfest 2025"
-                  className="input"
-                />
-                <p className="mt-1.5 text-xs text-gray-500">
-                  Name der Veranstaltung
-                </p>
-              </div>
-
-              <div>
-                <label className="label">
-                  Adresse der Event-Location *
-                </label>
-                <input
-                  type="text"
-                  name="eventAddress"
-                  value={formData.eventAddress}
-                  onChange={handleChange}
-                  required
-                  placeholder="z.B. Seestraße 1, 88045 Friedrichshafen"
-                  className="input"
-                />
-                <p className="mt-1.5 text-xs text-gray-500">
-                  Vollständige Adresse des Veranstaltungsortes
-                </p>
-              </div>
-
-              <div>
-                <label className="label">
-                  Event-Datum
-                </label>
-                <input
-                  type="date"
-                  name="eventDate"
-                  value={formData.eventDate}
-                  onChange={handleChange}
-                  className="input"
-                />
-                <p className="mt-1.5 text-xs text-gray-500">
-                  Datum der Veranstaltung (optional)
-                </p>
-              </div>
-
-              <div>
-                <label className="label">
-                  Kunde
-                </label>
-                <select
-                  name="clientId"
-                  value={formData.clientId}
-                  onChange={handleChange}
-                  required
-                  className="input"
-                >
-                  <option value="">-- Kein Kunde ausgewählt --</option>
-                  {clients.map((client) => (
-                    <option key={client.id} value={client.id}>
-                      {client.name}
-                    </option>
-                  ))}
-                </select>
-                {clients.length === 0 && (
-                  <p className="mt-1.5 text-xs text-amber-600">
-                    ⚠️ Keine Kunden vorhanden. Legen Sie zuerst Kunden an.
+              <div className="space-y-5">
+                <div>
+                  <label className="label">
+                    Event-Name / Kampagnen-Titel *
+                  </label>
+                  <input
+                    type="text"
+                    name="eventName"
+                    value={formData.eventName}
+                    onChange={handleChange}
+                    required
+                    placeholder="z.B. Sommerfest 2025"
+                    className="input"
+                  />
+                  <p className="mt-1.5 text-xs text-gray-500">
+                    Name der Veranstaltung
                   </p>
+                </div>
+
+                <div>
+                  <label className="label">
+                    Adresse der Event-Location *
+                  </label>
+                  <input
+                    type="text"
+                    name="eventAddress"
+                    value={formData.eventAddress}
+                    onChange={handleChange}
+                    required
+                    placeholder="z.B. Seestraße 1, 88045 Friedrichshafen"
+                    className="input"
+                  />
+                  <p className="mt-1.5 text-xs text-gray-500">
+                    Vollständige Adresse des Veranstaltungsortes
+                  </p>
+                </div>
+
+                <div>
+                  <label className="label">
+                    Event-Datum
+                  </label>
+                  <input
+                    type="date"
+                    name="eventDate"
+                    value={formData.eventDate}
+                    onChange={handleChange}
+                    className="input"
+                  />
+                  <p className="mt-1.5 text-xs text-gray-500">
+                    Datum der Veranstaltung (optional)
+                  </p>
+                </div>
+
+                <div>
+                  <label className="label">
+                    Kunde
+                  </label>
+                  <select
+                    name="clientId"
+                    value={formData.clientId}
+                    onChange={handleChange}
+                    required
+                    className="input"
+                  >
+                    <option value="">-- Kein Kunde ausgewählt --</option>
+                    {clients.map((client) => (
+                      <option key={client.id} value={client.id}>
+                        {client.name}
+                      </option>
+                    ))}
+                  </select>
+                  {clients.length === 0 && (
+                    <p className="mt-1.5 text-xs text-amber-600">
+                      ⚠️ Keine Kunden vorhanden. Legen Sie zuerst Kunden an.
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Werbezeitraum */}
+            <div className="card">
+              <h2 className="text-base font-semibold mb-6 text-gray-900">
+                Werbezeitraum (Kampagnen-Zeitraum)
+              </h2>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                  <label className="label">
+                    Start-Datum *
+                  </label>
+                  <input
+                    type="date"
+                    name="startDate"
+                    value={formData.startDate}
+                    onChange={handleChange}
+                    required
+                    className="input"
+                  />
+                  <p className="mt-1.5 text-xs text-gray-500">
+                    Ab wann sollen Plakate hängen
+                  </p>
+                </div>
+
+                <div>
+                  <label className="label">
+                    End-Datum *
+                  </label>
+                  <input
+                    type="date"
+                    name="endDate"
+                    value={formData.endDate}
+                    onChange={handleChange}
+                    required
+                    className="input"
+                  />
+                  <p className="mt-1.5 text-xs text-gray-500">
+                    Bis wann sollen Plakate hängen
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Plakatvorlage */}
+            <div className="card">
+              <h2 className="text-base font-semibold mb-6 text-gray-900">
+                Plakatvorlage
+              </h2>
+
+              <div>
+                <label className="label">
+                  Plakatvorlage hochladen
+                </label>
+                <input
+                  type="file"
+                  accept=".pdf,.jpg,.jpeg,.png,.ai,.psd"
+                  onChange={handleFileChange}
+                  className="input cursor-pointer"
+                />
+                <p className="mt-1.5 text-xs text-gray-500">
+                  Akzeptiert: PDF, JPG, PNG, AI, PSD (max. 25MB)
+                </p>
+                {posterFile && (
+                  <div className="mt-2 flex items-center gap-2 text-sm text-green-600">
+                    <span>✓</span>
+                    <span>{posterFile.name}</span>
+                    <span className="text-gray-500">
+                      ({(posterFile.size / 1024 / 1024).toFixed(2)} MB)
+                    </span>
+                  </div>
                 )}
               </div>
             </div>
-          </div>
 
-          {/* Werbezeitraum */}
-          <div className="card">
-            <h2 className="text-base font-semibold mb-6 text-gray-900">
-              Werbezeitraum (Kampagnen-Zeitraum)
-            </h2>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-              <div>
-                <label className="label">
-                  Start-Datum *
-                </label>
-                <input
-                  type="date"
-                  name="startDate"
-                  value={formData.startDate}
-                  onChange={handleChange}
-                  required
-                  className="input"
-                />
-                <p className="mt-1.5 text-xs text-gray-500">
-                  Ab wann sollen Plakate hängen
-                </p>
-              </div>
+            {/* Notizen */}
+            <div className="card">
+              <h2 className="text-base font-semibold mb-6 text-gray-900">
+                Zusätzliche Informationen
+              </h2>
 
               <div>
                 <label className="label">
-                  End-Datum *
+                  Notizen
                 </label>
-                <input
-                  type="date"
-                  name="endDate"
-                  value={formData.endDate}
+                <textarea
+                  name="notes"
+                  value={formData.notes}
                   onChange={handleChange}
-                  required
-                  className="input"
+                  rows={4}
+                  placeholder="Besonderheiten, Anforderungen, Kontaktpersonen..."
+                  className="input resize-none"
                 />
-                <p className="mt-1.5 text-xs text-gray-500">
-                  Bis wann sollen Plakate hängen
-                </p>
               </div>
             </div>
-          </div>
 
-          {/* Plakatvorlage */}
-          <div className="card">
-            <h2 className="text-base font-semibold mb-6 text-gray-900">
-              Plakatvorlage
-            </h2>
-
-            <div>
-              <label className="label">
-                Plakatvorlage hochladen
-              </label>
-              <input
-                type="file"
-                accept=".pdf,.jpg,.jpeg,.png,.ai,.psd"
-                onChange={handleFileChange}
-                className="input cursor-pointer"
-              />
-              <p className="mt-1.5 text-xs text-gray-500">
-                Akzeptiert: PDF, JPG, PNG, AI, PSD (max. 25MB)
-              </p>
-              {posterFile && (
-                <div className="mt-2 flex items-center gap-2 text-sm text-green-600">
-                  <span>✓</span>
-                  <span>{posterFile.name}</span>
-                  <span className="text-gray-500">
-                    ({(posterFile.size / 1024 / 1024).toFixed(2)} MB)
-                  </span>
-                </div>
-              )}
+            {/* Actions */}
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn-primary disabled:opacity-50"
+              >
+                {loading ? "Wird erstellt..." : "Kampagne erstellen"}
+              </button>
+              <button
+                type="button"
+                onClick={() => router.push("/dashboard")}
+                className="btn-secondary"
+              >
+                Abbrechen
+              </button>
             </div>
-          </div>
-
-          {/* Notizen */}
-          <div className="card">
-            <h2 className="text-base font-semibold mb-6 text-gray-900">
-              Zusätzliche Informationen
-            </h2>
-
-            <div>
-              <label className="label">
-                Notizen
-              </label>
-              <textarea
-                name="notes"
-                value={formData.notes}
-                onChange={handleChange}
-                rows={4}
-                placeholder="Besonderheiten, Anforderungen, Kontaktpersonen..."
-                className="input resize-none"
-              />
-            </div>
-          </div>
-
-          {/* Actions */}
-          <div className="flex items-center gap-3 pt-2">
-            <button
-              type="submit"
-              disabled={loading}
-              className="btn-primary disabled:opacity-50"
-            >
-              {loading ? "Wird erstellt..." : "Kampagne erstellen"}
-            </button>
-            <button
-              type="button"
-              onClick={() => router.push("/dashboard")}
-              className="btn-secondary"
-            >
-              Abbrechen
-            </button>
-          </div>
-        </form>
+          </form>
         </div>
       </div>
     </AppLayout>
   );
 }
+
 
