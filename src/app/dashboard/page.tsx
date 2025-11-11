@@ -22,11 +22,25 @@ type DashboardCampaign = Prisma.CampaignGetPayload<{
 export default async function DashboardPage() {
   let campaigns: DashboardCampaign[] = [];
   let loadError: string | null = null;
+  let loadErrorDetails: string | null = null;
 
   try {
     campaigns = await prisma.campaign.findMany({
-      include: {
-        client: true,
+      select: {
+        id: true,
+        eventName: true,
+        eventAddress: true,
+        eventDate: true,
+        startDate: true,
+        endDate: true,
+        status: true,
+        createdAt: true,
+        updatedAt: true,
+        client: {
+          select: {
+            name: true,
+          },
+        },
         _count: {
           select: {
             permits: true,
@@ -36,10 +50,11 @@ export default async function DashboardPage() {
         },
       },
       orderBy: { startDate: "desc" },
-    });
+    }) as DashboardCampaign[];
   } catch (error: any) {
     console.error("Dashboard campaigns load error:", error);
     loadError = error?.message || "Unbekannter Fehler beim Laden der Kampagnen.";
+    loadErrorDetails = error?.stack || null;
     campaigns = [];
   }
 
@@ -74,6 +89,11 @@ export default async function DashboardPage() {
             <p className="text-xs text-red-500 mt-2">
               Datenbank-Host (laut Server-ENV): <code>{dbHost}</code>
             </p>
+            {loadErrorDetails && (
+              <pre className="mt-3 p-3 rounded bg-red-100 text-xs overflow-auto max-h-48">
+                {loadErrorDetails}
+              </pre>
+            )}
             <p className="mt-4 text-xs text-red-500">
               Weitere Details finden Sie in den Server-Logs. Bitte informieren Sie den Entwickler.
             </p>
