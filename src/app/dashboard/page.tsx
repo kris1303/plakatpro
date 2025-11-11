@@ -53,12 +53,27 @@ export default async function DashboardPage() {
   };
 
   if (loadError) {
+    let dbHost = "unbekannt";
+    try {
+      const url = process.env.DATABASE_URL
+        ? new URL(process.env.DATABASE_URL)
+        : null;
+      if (url) {
+        dbHost = url.host;
+      }
+    } catch {
+      // ignore parsing errors
+    }
+
     return (
       <AppLayout>
         <div className="p-8">
           <div className="card border-red-200 bg-red-50 text-red-700">
             <h1 className="text-lg font-semibold mb-2">Fehler beim Laden des Dashboards</h1>
             <p className="text-sm">{loadError}</p>
+            <p className="text-xs text-red-500 mt-2">
+              Datenbank-Host (laut Server-ENV): <code>{dbHost}</code>
+            </p>
             <p className="mt-4 text-xs text-red-500">
               Weitere Details finden Sie in den Server-Logs. Bitte informieren Sie den Entwickler.
             </p>
