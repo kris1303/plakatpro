@@ -3,9 +3,11 @@ import { prisma } from "@/lib/prisma";
 import { uploadToS3 } from "@/lib/storage";
 import crypto from "node:crypto";
 
+export const runtime = "nodejs";
+
 const MAX_SIZE_BYTES = {
   "poster-images": 6 * 1024 * 1024, // 6 MB
-  "permit-forms": 8 * 1024 * 1024,  // 8 MB
+  "permit-forms": 8 * 1024 * 1024, // 8 MB
 } as const;
 
 type UploadCategory = keyof typeof MAX_SIZE_BYTES;
@@ -18,7 +20,11 @@ function slugifyFileName(fileName: string) {
   const normalized = fileName.normalize("NFKD");
   const parts = normalized.split(".");
   const extension = parts.length > 1 ? `.${parts.pop()!.toLowerCase()}` : "";
-  const base = parts.join(".").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+  const base = parts
+    .join(".")
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
   return `${base || "file"}${extension}`;
 }
 
@@ -110,56 +116,5 @@ export async function POST(req: Request) {
     );
   }
 }
-import { NextResponse } from "next/server";
-import { uploadToS3 } from "@/lib/storage";
-import { prisma } from "@/lib/prisma";
 
-export const runtime = "nodejs";
-
-export async function POST(request: Request) {
-  try {
-    const formData = await request.formData();
-    const file = formData.get("file");
-    const category = formData.get("category")?.toString() ?? "uploads";
-
-    if (!(file instanceof File)) {
-      return NextResponse.json(
-        { error: "Ungültige Datei" },
-        { status: 400 }
-      );
-    }
-
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-
-    const { key } = await uploadToS3({
-      buffer,
-      contentType: file.type || "application/octet-stream",
-      fileName: file.name,
-      prefix: category,
-    });
-
-    const asset = await prisma.fileAsset.create({
-      data: {
-        key,
-        fileName: file.name,
-        contentType: file.type || "application/octet-stream",
-        size: file.size,
-      },
-    });
-
-    return NextResponse.json({
-      id: asset.id,
-      fileName: asset.fileName,
-      contentType: asset.contentType,
-      size: asset.size,
-    });
-  } catch (error) {
-    console.error("Upload fehlgeschlagen:", error);
-    return NextResponse.json(
-      { error: "Upload fehlgeschlagen" },
-      { status: 500 }
-    );
-  }
-}
 
