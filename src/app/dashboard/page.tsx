@@ -2,23 +2,46 @@ import { prisma } from "@/lib/prisma";
 import KanbanBoard from "@/components/KanbanBoard";
 import AppLayout from "@/components/AppLayout";
 import Link from "next/link";
+import { Prisma } from "@prisma/client";
 
 export const dynamic = 'force-dynamic';
 
+type DashboardCampaign = Prisma.CampaignGetPayload<{
+  include: {
+    client: true;
+    _count: {
+      select: {
+        permits: true;
+        routes: true;
+        photos: true;
+      };
+    };
+  };
+}>;
+
 export default async function DashboardPage() {
-  const campaigns = await prisma.campaign.findMany({
-    include: {
-      client: true,
-      _count: {
-        select: {
-          permits: true,
-          routes: true,
-          photos: true,
+  let campaigns: DashboardCampaign[] = [];
+  let loadError: string | null = null;
+
+  try {
+    campaigns = await prisma.campaign.findMany({
+      include: {
+        client: true,
+        _count: {
+          select: {
+            permits: true,
+            routes: true,
+            photos: true,
+          },
         },
       },
-    },
-    orderBy: { startDate: "desc" },
-  });
+      orderBy: { startDate: "desc" },
+    });
+  } catch (error: any) {
+    console.error("Dashboard campaigns load error:", error);
+    loadError = error?.message || "Unbekannter Fehler beim Laden der Kampagnen.";
+    campaigns = [];
+  }
 
   const stats = {
     totalCampaigns: campaigns.length,
@@ -28,6 +51,22 @@ export default async function DashboardPage() {
     totalPermits: campaigns.reduce((sum, c) => sum + c._count.permits, 0),
     totalPhotos: campaigns.reduce((sum, c) => sum + c._count.photos, 0),
   };
+
+  if (loadError) {
+    return (
+      <AppLayout>
+        <div className="p-8">
+          <div className="card border-red-200 bg-red-50 text-red-700">
+            <h1 className="text-lg font-semibold mb-2">Fehler beim Laden des Dashboards</h1>
+            <p className="text-sm">{loadError}</p>
+            <p className="mt-4 text-xs text-red-500">
+              Weitere Details finden Sie in den Server-Logs. Bitte informieren Sie den Entwickler.
+            </p>
+          </div>
+        </div>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout>
