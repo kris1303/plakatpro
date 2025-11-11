@@ -55,12 +55,16 @@ export async function POST(
 				  > & { key: string })
 				| null
 				| undefined
-		) => {
+		): Promise<{ buffer: Buffer; contentType: string } | null> => {
 			if (!asset) return null;
 			if (assetCache.has(asset.id)) {
 				return assetCache.get(asset.id)!;
 			}
 			const downloaded = await downloadFromS3(asset.key);
+			if (!downloaded) {
+				console.warn(`S3 Asset konnte nicht geladen werden: ${asset.key}`);
+				return null;
+			}
 			assetCache.set(asset.id, downloaded);
 			return downloaded;
 		};
