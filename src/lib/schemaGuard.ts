@@ -137,6 +137,54 @@ export function ensureLatestSchema(prisma: PrismaClient) {
       END;
       $$;
       `,
+      // Permit.sentAt
+      `
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1
+          FROM information_schema.columns
+          WHERE table_schema = current_schema()
+            AND table_name = 'Permit'
+            AND column_name = 'sentAt'
+        ) THEN
+          ALTER TABLE "Permit" ADD COLUMN "sentAt" TIMESTAMP(3);
+        END IF;
+      END;
+      $$;
+      `,
+      // Permit.responseAt
+      `
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1
+          FROM information_schema.columns
+          WHERE table_schema = current_schema()
+            AND table_name = 'Permit'
+            AND column_name = 'responseAt'
+        ) THEN
+          ALTER TABLE "Permit" ADD COLUMN "responseAt" TIMESTAMP(3);
+        END IF;
+      END;
+      $$;
+      `,
+      // Permit.responseType
+      `
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1
+          FROM information_schema.columns
+          WHERE table_schema = current_schema()
+            AND table_name = 'Permit'
+            AND column_name = 'responseType'
+        ) THEN
+          ALTER TABLE "Permit" ADD COLUMN "responseType" "PermitResponseType";
+        END IF;
+      END;
+      $$;
+      `,
       // DistributionListItem.includePermitForm
       `
       DO $$
