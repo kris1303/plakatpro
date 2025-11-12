@@ -146,6 +146,8 @@ export function ensureLatestSchema(prisma: PrismaClient) {
       "42701", // column already exists
       "42P07", // relation (table/index) already exists
       "23505", // unique violation (duplicate constraint)
+      "42P16", // invalid table definition (e.g., constraint exists in namespace)
+      "42710", // duplicate object (constraint already exists)
     ]);
 
     async function safeExecute(sql: string) {
@@ -180,6 +182,9 @@ export function ensureLatestSchema(prisma: PrismaClient) {
             REFERENCES "FileAsset"("id")
             ON DELETE SET NULL ON UPDATE CASCADE;
         END IF;
+      EXCEPTION
+        WHEN duplicate_object THEN
+          NULL;
       END;
       $$;
     `);
@@ -197,6 +202,9 @@ export function ensureLatestSchema(prisma: PrismaClient) {
             REFERENCES "FileAsset"("id")
             ON DELETE SET NULL ON UPDATE CASCADE;
         END IF;
+      EXCEPTION
+        WHEN duplicate_object THEN
+          NULL;
       END;
       $$;
     `);
