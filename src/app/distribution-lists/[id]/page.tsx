@@ -86,10 +86,17 @@ export default function DistributionListDetailPage() {
   const fetchDistributionList = async () => {
     try {
       const res = await fetch(`/api/distribution-lists/${id}`);
+      if (!res.ok) {
+        const errorBody = await res.json().catch(() => null);
+        console.error("Fehler beim Laden der Verteilerliste:", res.status, errorBody);
+        throw new Error(errorBody?.error || `Request failed with status ${res.status}`);
+      }
       const data = await res.json();
       setDistributionList(data);
     } catch (error) {
       console.error("Fehler:", error);
+      alert("Verteilerliste konnte nicht geladen werden. Bitte versuchen Sie es erneut.");
+      setDistributionList(null);
     } finally {
       setLoading(false);
     }
