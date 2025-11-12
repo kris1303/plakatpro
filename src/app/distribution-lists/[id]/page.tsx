@@ -75,28 +75,31 @@ export default function DistributionListDetailPage() {
 
   const [distributionList, setDistributionList] = useState<DistributionList | null>(null);
   const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [actionLoading, setActionLoading] = useState(false);
   const [sendingClient, setSendingClient] = useState(false);
   const [sendingApplications, setSendingApplications] = useState(false);
 
   useEffect(() => {
+    if (!id) return;
     fetchDistributionList();
   }, [id]);
 
   const fetchDistributionList = async () => {
     try {
+      setErrorMessage(null);
       const res = await fetch(`/api/distribution-lists/${id}`);
       if (!res.ok) {
         const errorBody = await res.json().catch(() => null);
-        console.error("Fehler beim Laden der Verteilerliste:", res.status, errorBody);
-        throw new Error(errorBody?.error || `Request failed with status ${res.status}`);
+        const message = errorBody?.error || `Request failed with status ${res.status}`;
+        throw new Error(message);
       }
       const data = await res.json();
       setDistributionList(data);
-    } catch (error) {
-      console.error("Fehler:", error);
-      alert("Verteilerliste konnte nicht geladen werden. Bitte versuchen Sie es erneut.");
+    } catch (error: any) {
+      console.error("Fehler beim Laden der Verteilerliste:", error);
       setDistributionList(null);
+      setErrorMessage(error?.message || "Unbekannter Fehler beim Laden der Verteilerliste");
     } finally {
       setLoading(false);
     }
@@ -242,18 +245,30 @@ export default function DistributionListDetailPage() {
     }
   };
 
-  if (loading) {
+  if (!loading && errorMessage) {
     return (
       <AppLayout>
-        <div className="p-8 text-center">Laden...</div>
+        <div className="p-8 max-w-3xl mx-auto">
+          <div className="card border border-red-200 bg-red-50 text-red-700">
+            <h1 className="text-lg font-semibold mb-2">Verteilerliste konnte nicht geladen werden</h1>
+            <p className="text-sm mb-4">{errorMessage}</p>
+            <button
+              className="btn-secondary"
+              onClick={() => fetchDistributionList()}
+              disabled={loading}
+            >
+              Erneut versuchen
+            </button>
+          </div>
+        </div>
       </AppLayout>
     );
   }
 
-  if (!distributionList) {
+  if (loading || !distributionList) {
     return (
       <AppLayout>
-        <div className="p-8 text-center">Verteilerliste nicht gefunden</div>
+        <div className="p-8 text-center">Laden...</div>
       </AppLayout>
     );
   }
