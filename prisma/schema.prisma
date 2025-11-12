@@ -170,6 +170,7 @@ model City {
   routeStops            RouteStop[]
   distributionListItems DistributionListItem[]
   requiresPermitForm    Boolean               @default(false)
+  requiresPosterImage   Boolean               @default(false)
   permitFormAssetId     String?
   permitFormAsset       FileAsset?            @relation("PermitFormAsset", fields: [permitFormAssetId], references: [id])
   createdAt             DateTime              @default(now())

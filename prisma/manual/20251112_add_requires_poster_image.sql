@@ -1,0 +1,4 @@
+ALTER TABLE "City"
+  ADD COLUMN IF NOT EXISTS "requiresPosterImage" BOOLEAN NOT NULL DEFAULT false;
+
+

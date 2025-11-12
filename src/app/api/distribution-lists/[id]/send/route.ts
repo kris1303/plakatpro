@@ -70,7 +70,7 @@ export async function POST(
 		};
 
 		const formatDate = (value: string | Date | null | undefined) => {
-			if (!value) return null;
+			if (!value) return "";
 			return new Date(value).toLocaleDateString("de-DE");
 		};
 
@@ -103,10 +103,12 @@ export async function POST(
 			let htmlBody = "";
 
 			try {
-				if (
-					item.includePosterImage &&
-					distributionList.posterImageAsset
-				) {
+				const shouldAttachPosterImage =
+					(item.includePosterImage ||
+						item.city.requiresPosterImage) &&
+					!!distributionList.posterImageAsset;
+
+				if (shouldAttachPosterImage) {
 					const asset = await getCachedAsset(distributionList.posterImageAsset);
 					if (asset) {
 						attachments.push({

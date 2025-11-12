@@ -40,6 +40,7 @@ export async function POST(req: NextRequest) {
       lat,
       lng,
       requiresPermitForm,
+      requiresPosterImage,
       permitFormAssetId,
     } = data;
 
@@ -62,6 +63,7 @@ export async function POST(req: NextRequest) {
         lat,
         lng,
         requiresPermitForm: !!requiresPermitForm,
+        requiresPosterImage: !!requiresPosterImage,
         permitFormAssetId: permitFormAssetId || null,
       },
       include: {

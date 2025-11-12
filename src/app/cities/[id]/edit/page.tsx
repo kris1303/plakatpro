@@ -19,6 +19,7 @@ export default function EditCityPage() {
     maxQty: "",
     maxSize: "",
     requiresPermitForm: false,
+    requiresPosterImage: false,
   });
   const [permitForm, setPermitForm] = useState<{
     id: string;
@@ -44,6 +45,7 @@ export default function EditCityPage() {
           maxQty: city.maxQty?.toString() || "",
           maxSize: city.maxSize || "",
           requiresPermitForm: city.requiresPermitForm || false,
+          requiresPosterImage: city.requiresPosterImage || false,
         });
         if (city.permitFormAsset) {
           setPermitForm({
@@ -84,6 +86,7 @@ export default function EditCityPage() {
           maxQty: formData.maxQty ? parseInt(formData.maxQty) : null,
           maxSize: formData.maxSize || null,
           requiresPermitForm: formData.requiresPermitForm,
+          requiresPosterImage: formData.requiresPosterImage,
           permitFormAssetId: permitForm?.id || null,
         }),
       });
@@ -265,6 +268,23 @@ export default function EditCityPage() {
             </h2>
 
             <div className="space-y-4">
+              <label className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  checked={formData.requiresPosterImage}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      requiresPosterImage: e.target.checked,
+                    })
+                  }
+                  className="h-4 w-4 text-blue-600 border-gray-300 rounded"
+                />
+                <span className="text-sm text-gray-700">
+                  Kommune verlangt das Plakatmotiv als Anhang
+                </span>
+              </label>
+
               <div className="flex items-center justify-between">
                 <label className="flex items-center gap-3">
                   <input

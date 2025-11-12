@@ -46,6 +46,7 @@ type DistributionList = {
       postalCode: string | null;
       email: string | null;
       requiresPermitForm: boolean;
+      requiresPosterImage: boolean;
       permitFormAsset?: {
         id: string;
         fileName: string;

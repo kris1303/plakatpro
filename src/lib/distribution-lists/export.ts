@@ -20,6 +20,7 @@ export async function fetchDistributionListForExport(id: string) {
               postalCode: true,
               email: true,
               requiresPermitForm: true,
+              requiresPosterImage: true,
               permitFormAsset: {
                 select: {
                   id: true,

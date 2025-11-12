@@ -53,6 +53,7 @@ export async function PUT(
       maxQty,
       maxSize,
       requiresPermitForm,
+      requiresPosterImage,
       permitFormAssetId,
     } = data;
 
@@ -74,6 +75,7 @@ export async function PUT(
         maxQty,
         maxSize,
         requiresPermitForm: !!requiresPermitForm,
+        requiresPosterImage: !!requiresPosterImage,
         permitFormAssetId: permitFormAssetId || null,
       },
       include: {
