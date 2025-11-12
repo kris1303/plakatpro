@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
+    const debug = searchParams.get("debug") === "1";
     const clientId = searchParams.get("clientId");
     const status = searchParams.get("status");
     const scope = searchParams.get("scope") || "active";
@@ -54,7 +55,17 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error("Fehler beim Laden der Verteilerlisten:", error);
     return NextResponse.json(
-      { error: "Fehler beim Laden der Verteilerlisten" },
+      {
+        error: "Fehler beim Laden der Verteilerlisten",
+        ...(debug
+          ? {
+              details:
+                error instanceof Error
+                  ? { message: error.message, stack: error.stack }
+                  : { raw: String(error) },
+            }
+          : {}),
+      },
       { status: 500 }
     );
   }
