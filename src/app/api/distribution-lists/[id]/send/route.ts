@@ -120,10 +120,10 @@ export async function POST(
 							content: asset.buffer,
 						});
 						attachmentMeta.push({
-							filename: distributionList.posterImageAsset.fileName,
+							filename: distributionList.posterImageAsset?.fileName ?? "poster.jpg",
 							contentType:
 								asset.contentType ||
-								distributionList.posterImageAsset.contentType ||
+								distributionList.posterImageAsset?.contentType ||
 								"application/octet-stream",
 						});
 					}
