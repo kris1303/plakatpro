@@ -18,7 +18,6 @@ export async function fetchDistributionListForExport(id: string) {
               id: true,
               name: true,
               postalCode: true,
-              population: true,
               email: true,
               requiresPermitForm: true,
               permitFormAsset: {

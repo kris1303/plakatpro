@@ -58,12 +58,6 @@ export default async function CitiesPage() {
                 </div>
               </div>
 
-              {city.population && (
-                <div className="text-sm text-gray-600 mb-3">
-                  👥 {city.population.toLocaleString('de-DE')} Einwohner
-                </div>
-              )}
-
               {city.email && (
                 <div className="flex items-center gap-2 text-sm text-gray-600 mb-3">
                   <span className="text-gray-400">📧</span>

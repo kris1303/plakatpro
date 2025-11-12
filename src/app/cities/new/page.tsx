@@ -10,7 +10,6 @@ export default function NewCityPage() {
   const [formData, setFormData] = useState({
     name: "",
     postalCode: "",
-    population: "",
     email: "",
     feeModel: "",
     fee: "",
@@ -29,7 +28,6 @@ export default function NewCityPage() {
         body: JSON.stringify({
           name: formData.name,
           postalCode: formData.postalCode || null,
-          population: formData.population ? parseInt(formData.population) : null,
           email: formData.email || null,
           feeModel: formData.feeModel || null,
           fee: formData.fee ? parseFloat(formData.fee) : null,
@@ -90,17 +88,6 @@ export default function NewCityPage() {
                   onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
                   className="input-field"
                   placeholder="z.B. 50667"
-                />
-              </div>
-
-              <div>
-                <label className="input-label">Einwohnerzahl</label>
-                <input
-                  type="number"
-                  value={formData.population}
-                  onChange={(e) => setFormData({ ...formData, population: e.target.value })}
-                  className="input-field"
-                  placeholder="z.B. 1085664"
                 />
               </div>
 

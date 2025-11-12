@@ -47,7 +47,6 @@ export async function PUT(
     const {
       name,
       postalCode,
-      population,
       email,
       feeModel,
       fee,
@@ -69,7 +68,6 @@ export async function PUT(
       data: {
         name,
         postalCode,
-        population,
         email,
         feeModel,
         fee,
