@@ -73,6 +73,70 @@ export function ensureLatestSchema(prisma: PrismaClient) {
       END;
       $$;
       `,
+      // DistributionListItem.permitStatus
+      `
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1
+          FROM information_schema.columns
+          WHERE table_schema = current_schema()
+            AND table_name = 'DistributionListItem'
+            AND column_name = 'permitStatus'
+        ) THEN
+          ALTER TABLE "DistributionListItem" ADD COLUMN "permitStatus" "PermitStatus" NOT NULL DEFAULT 'draft';
+        END IF;
+      END;
+      $$;
+      `,
+      // DistributionListItem.sentAt
+      `
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1
+          FROM information_schema.columns
+          WHERE table_schema = current_schema()
+            AND table_name = 'DistributionListItem'
+            AND column_name = 'sentAt'
+        ) THEN
+          ALTER TABLE "DistributionListItem" ADD COLUMN "sentAt" TIMESTAMP(3);
+        END IF;
+      END;
+      $$;
+      `,
+      // DistributionListItem.responseAt
+      `
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1
+          FROM information_schema.columns
+          WHERE table_schema = current_schema()
+            AND table_name = 'DistributionListItem'
+            AND column_name = 'responseAt'
+        ) THEN
+          ALTER TABLE "DistributionListItem" ADD COLUMN "responseAt" TIMESTAMP(3);
+        END IF;
+      END;
+      $$;
+      `,
+      // DistributionListItem.responseType
+      `
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1
+          FROM information_schema.columns
+          WHERE table_schema = current_schema()
+            AND table_name = 'DistributionListItem'
+            AND column_name = 'responseType'
+        ) THEN
+          ALTER TABLE "DistributionListItem" ADD COLUMN "responseType" "PermitResponseType";
+        END IF;
+      END;
+      $$;
+      `,
       // DistributionListItem.includePermitForm
       `
       DO $$
