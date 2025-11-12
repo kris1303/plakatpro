@@ -148,43 +148,27 @@ export async function POST(
 					}
 				}
 
-				const plainAttachments =
-					attachmentMeta.length > 0
-						? `\nBeigefügte Unterlagen:\n${attachmentMeta
-								.map((file) => `- ${file.filename}`)
-								.join("\n")}\n`
-						: "";
-
-				const htmlAttachments =
-					attachmentMeta.length > 0
-						? `<p><strong>Beigefügte Unterlagen:</strong></p>
-				<ul>
-					${attachmentMeta
-						.map(
-							(file) =>
-								`<li>${file.filename}</li>`
-						)
-						.join("")}
-				</ul>`
-						: "";
+				const attachmentsList = attachmentMeta
+					.map((file) => `- ${file.filename}`)
+					.join("\n");
+				const htmlAttachmentsList = attachmentMeta
+					.map((file) => `<li>${file.filename}</li>`)
+					.join("");
 
 				textBody = `Sehr geehrte Damen und Herren der ${item.city.name},
 
-wir bitten um die Genehmigung der Plakatierungsmaßnahme für unsere Veranstaltung „${distributionList.eventName}“.
+wir beantragen hiermit eine Genehmigung zur Plakatierung für die Veranstaltung „${distributionList.eventName}“ im Zeitraum vom ${formattedStart} bis ${formattedEnd}.
 
 Veranstaltungsdaten:
-- Zeitraum: ${formattedStart} bis ${formattedEnd}
 ${formattedEventDate ? `- Veranstaltungstag: ${formattedEventDate}\n` : ""}${
 					distributionList.eventAddress
 						? `- Veranstaltungsort: ${distributionList.eventAddress}\n`
 						: ""
 				}Geplante Plakatierung in Ihrem Zuständigkeitsbereich:
 - Anzahl Plakate: ${item.quantity}
-- Format: ${item.posterSize}${
-					distanceInfo ? `\n- Entfernung zum Veranstaltungsort: ${distanceInfo}` : ""
-				}
+- Format: ${item.posterSize}
 
-${plainAttachments}Für Rückfragen stehen wir jederzeit zur Verfügung und freuen uns über eine kurze Rückmeldung zu Ihrem Entscheid.
+${attachmentMeta.length ? `Beigefügte Unterlagen:\n${attachmentsList}\n` : ""}Für Rückfragen stehen wir jederzeit zur Verfügung und freuen uns über eine kurze Rückmeldung zu Ihrem Entscheid.
 
 Vielen Dank und freundliche Grüße
 Kristijan Cajic
@@ -192,10 +176,9 @@ Werbeinsel`;
 
 				htmlBody = `
 				<p>Sehr geehrte Damen und Herren der ${item.city.name},</p>
-				<p>wir bitten um die Genehmigung der Plakatierungsmaßnahme für unsere Veranstaltung „<strong>${distributionList.eventName}</strong>“.</p>
+				<p>wir beantragen hiermit eine Genehmigung zur Plakatierung für die Veranstaltung „<strong>${distributionList.eventName}</strong>“ im Zeitraum vom <strong>${formattedStart}</strong> bis <strong>${formattedEnd}</strong>.</p>
 				<p><strong>Veranstaltungsdaten:</strong></p>
 				<ul>
-					<li>Zeitraum: <strong>${formattedStart} bis ${formattedEnd}</strong></li>
 					${
 						formattedEventDate
 							? `<li>Veranstaltungstag: <strong>${formattedEventDate}</strong></li>`
@@ -211,14 +194,13 @@ Werbeinsel`;
 				<ul>
 					<li>Anzahl Plakate: <strong>${item.quantity}</strong></li>
 					<li>Format: <strong>${item.posterSize}</strong></li>
-					${
-						distanceInfo
-							? `<li>Entfernung zum Veranstaltungsort: <strong>${distanceInfo}</strong></li>`
-							: ""
-					}
 				</ul>
-				${htmlAttachments}
-				<p>Für Rückfragen stehen wir jederzeit gerne zur Verfügung und freuen uns über eine kurze Rückmeldung zu Ihrem Entscheid.</p>
+				${
+					attachmentMeta.length
+						? `<p><strong>Beigefügte Unterlagen:</strong></p><ul>${htmlAttachmentsList}</ul>`
+						: ""
+				}
+				<p>Für Rückfragen stehen wir jederzeit zur Verfügung und freuen uns über eine kurze Rückmeldung zu Ihrem Entscheid.</p>
 				<p>Vielen Dank und freundliche Grüße<br/>Kristijan Cajic<br/>Werbeinsel</p>
 			`;
 
