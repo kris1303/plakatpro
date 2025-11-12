@@ -1,3 +1,19 @@
+DO $$
+BEGIN
+  CREATE TYPE "EmailDirection" AS ENUM ('outbound', 'inbound');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END;
+$$;
+
+DO $$
+BEGIN
+  CREATE TYPE "EmailStatus" AS ENUM ('queued', 'sent', 'delivered', 'failed', 'received');
+EXCEPTION
+  WHEN duplicate_object THEN NULL;
+END;
+$$;
+
 CREATE TABLE IF NOT EXISTS "PermitEmail" (
   "id" TEXT PRIMARY KEY,
   "distributionListItemId" TEXT,
@@ -22,11 +38,11 @@ BEGIN
   IF NOT EXISTS (
     SELECT 1 FROM pg_constraint WHERE conname = 'PermitEmail_distributionListItemId_fkey'
   ) THEN
-    ALTER TABLE "PermitEmail"
-      ADD CONSTRAINT "PermitEmail_distributionListItemId_fkey"
-      FOREIGN KEY ("distributionListItemId")
-      REFERENCES "DistributionListItem"("id")
-      ON DELETE CASCADE ON UPDATE CASCADE;
+      ALTER TABLE "PermitEmail"
+        ADD CONSTRAINT "PermitEmail_distributionListItemId_fkey"
+        FOREIGN KEY ("distributionListItemId")
+        REFERENCES "DistributionListItem"("id")
+        ON DELETE CASCADE ON UPDATE CASCADE;
   END IF;
 END;
 $$;
@@ -36,11 +52,11 @@ BEGIN
   IF NOT EXISTS (
     SELECT 1 FROM pg_constraint WHERE conname = 'PermitEmail_permitId_fkey'
   ) THEN
-    ALTER TABLE "PermitEmail"
-      ADD CONSTRAINT "PermitEmail_permitId_fkey"
-      FOREIGN KEY ("permitId")
-      REFERENCES "Permit"("id")
-      ON DELETE CASCADE ON UPDATE CASCADE;
+      ALTER TABLE "PermitEmail"
+        ADD CONSTRAINT "PermitEmail_permitId_fkey"
+        FOREIGN KEY ("permitId")
+        REFERENCES "Permit"("id")
+        ON DELETE CASCADE ON UPDATE CASCADE;
   END IF;
 END;
 $$;
