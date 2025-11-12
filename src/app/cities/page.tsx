@@ -67,6 +67,17 @@ export default async function CitiesPage() {
                 </div>
               )}
 
+              {(city.requiresPosterImage || city.requiresPermitForm) && (
+                <div className="flex flex-wrap gap-2 mb-3">
+                  {city.requiresPosterImage && (
+                    <span className="badge badge-blue text-xs">🖼️ Plakatmotiv erforderlich</span>
+                  )}
+                  {city.requiresPermitForm && (
+                    <span className="badge badge-gray text-xs">📄 Formular erforderlich</span>
+                  )}
+                </div>
+              )}
+
               <div className="space-y-2 text-sm mb-4">
                 {city.feeModel && (
                   <div className="flex justify-between">

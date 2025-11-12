@@ -285,71 +285,77 @@ export default function EditCityPage() {
                 </span>
               </label>
 
-              <div className="flex items-center justify-between">
-                <label className="flex items-center gap-3">
-                  <input
-                    type="checkbox"
-                    checked={formData.requiresPermitForm}
-                    onChange={(e) =>
-                      setFormData({
-                        ...formData,
-                        requiresPermitForm: e.target.checked,
-                      })
-                    }
-                    className="h-4 w-4 text-blue-600 border-gray-300 rounded"
-                  />
-                  <span className="text-sm text-gray-700">
-                    Kommune verlangt eigenes Formular im Antrag
-                  </span>
-                </label>
-                {formData.requiresPermitForm && (
-                  <span className="text-xs text-gray-500">
-                    Wird beim Antrag automatisch angehängt
-                  </span>
-                )}
-              </div>
+              <div className="border-t border-gray-200 pt-4 space-y-4">
+                <div className="flex items-center justify-between">
+                  <label className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      checked={formData.requiresPermitForm}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          requiresPermitForm: e.target.checked,
+                        })
+                      }
+                      className="h-4 w-4 text-blue-600 border-gray-300 rounded"
+                    />
+                    <span className="text-sm text-gray-700">
+                      Kommune verlangt ein eigenes Genehmigungsformular
+                    </span>
+                  </label>
+                  {formData.requiresPermitForm && (
+                    <span className="text-xs text-gray-500">
+                      Wird bei Anträgen automatisch mitgeschickt
+                    </span>
+                  )}
+                </div>
 
-              <div className="border border-dashed border-gray-300 rounded-lg p-4 bg-gray-50">
-                <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-                  <div>
-                    <div className="text-sm font-medium text-gray-800">
-                      {permitForm ? "Aktuelles Formular" : "Kein Formular hinterlegt"}
-                    </div>
-                    {permitForm && (
-                      <div className="text-xs text-gray-500">
-                        {permitForm.fileName} · {(permitForm.size / 1024).toFixed(1)} KB
+                <div className="border border-dashed border-gray-300 rounded-lg p-4 bg-gray-50">
+                  <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                    <div>
+                      <div className="text-sm font-medium text-gray-800">
+                        {permitForm ? "Aktuelles Formular" : "Kein Formular hinterlegt"}
                       </div>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <label className="btn-secondary cursor-pointer">
-                      {uploadingPermitForm ? "Lade hoch..." : permitForm ? "Formular ersetzen" : "Formular hochladen"}
-                      <input
-                        type="file"
-                        accept="application/pdf"
-                        className="hidden"
-                        onChange={(event) => {
-                          const file = event.target.files?.[0];
-                          if (file) {
-                            if (file.size > 5 * 1024 * 1024) {
-                              alert("Bitte maximal 5 MB große PDF-Dateien hochladen.");
-                              return;
+                      {permitForm && (
+                        <div className="text-xs text-gray-500">
+                          {permitForm.fileName} · {(permitForm.size / 1024).toFixed(1)} KB
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <label className="btn-secondary cursor-pointer">
+                        {uploadingPermitForm
+                          ? "Lade hoch..."
+                          : permitForm
+                          ? "Formular ersetzen"
+                          : "Formular hochladen"}
+                        <input
+                          type="file"
+                          accept="application/pdf"
+                          className="hidden"
+                          onChange={(event) => {
+                            const file = event.target.files?.[0];
+                            if (file) {
+                              if (file.size > 5 * 1024 * 1024) {
+                                alert("Bitte maximal 5 MB große PDF-Dateien hochladen.");
+                                return;
+                              }
+                              handlePermitFormUpload(file);
                             }
-                            handlePermitFormUpload(file);
-                          }
-                        }}
-                        disabled={uploadingPermitForm}
-                      />
-                    </label>
-                    {permitForm && (
-                      <button
-                        type="button"
-                        className="btn-ghost text-sm"
-                        onClick={() => setPermitForm(null)}
-                      >
-                        Entfernen
-                      </button>
-                    )}
+                          }}
+                          disabled={uploadingPermitForm}
+                        />
+                      </label>
+                      {permitForm && (
+                        <button
+                          type="button"
+                          className="btn-ghost text-sm"
+                          onClick={() => setPermitForm(null)}
+                        >
+                          Entfernen
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>

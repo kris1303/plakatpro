@@ -15,9 +15,9 @@ export default function NewCityPage() {
     fee: "",
     maxQty: "",
     maxSize: "",
-    requiresPermitForm: false,
-    requiresPosterImage: false,
   });
+  const [requiresPermitForm, setRequiresPermitForm] = useState(false);
+  const [requiresPosterImage, setRequiresPosterImage] = useState(false);
   const [permitForm, setPermitForm] = useState<{
     id: string;
     fileName: string;
@@ -42,8 +42,8 @@ export default function NewCityPage() {
           fee: formData.fee ? parseFloat(formData.fee) : null,
           maxQty: formData.maxQty ? parseInt(formData.maxQty) : null,
           maxSize: formData.maxSize || null,
-          requiresPermitForm: formData.requiresPermitForm,
-          requiresPosterImage: formData.requiresPosterImage,
+          requiresPermitForm,
+          requiresPosterImage,
           permitFormAssetId: permitForm?.id || null,
         }),
       });
@@ -208,20 +208,15 @@ export default function NewCityPage() {
 
           <div className="card">
             <h2 className="text-lg font-semibold text-gray-900 mb-4">
-              📎 Anforderungen der Kommune
+              📝 Formulare der Kommune
             </h2>
 
             <div className="space-y-4">
               <label className="flex items-center gap-3">
                 <input
                   type="checkbox"
-                  checked={formData.requiresPosterImage}
-                  onChange={(e) =>
-                    setFormData({
-                      ...formData,
-                      requiresPosterImage: e.target.checked,
-                    })
-                  }
+                  checked={requiresPosterImage}
+                  onChange={(e) => setRequiresPosterImage(e.target.checked)}
                   className="h-4 w-4 text-blue-600 border-gray-300 rounded"
                 />
                 <span className="text-sm text-gray-700">
@@ -229,36 +224,31 @@ export default function NewCityPage() {
                 </span>
               </label>
 
-              <div className="border-t border-gray-200 pt-4">
+              <div className="border-t border-gray-200 pt-4 space-y-4">
                 <div className="flex items-center justify-between">
                   <label className="flex items-center gap-3">
                     <input
                       type="checkbox"
-                      checked={formData.requiresPermitForm}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          requiresPermitForm: e.target.checked,
-                        })
-                      }
+                      checked={requiresPermitForm}
+                      onChange={(e) => setRequiresPermitForm(e.target.checked)}
                       className="h-4 w-4 text-blue-600 border-gray-300 rounded"
                     />
                     <span className="text-sm text-gray-700">
                       Kommune verlangt ein eigenes Genehmigungsformular
                     </span>
                   </label>
-                  {formData.requiresPermitForm && (
+                  {requiresPermitForm && (
                     <span className="text-xs text-gray-500">
                       Wird bei Anträgen automatisch mitgeschickt
                     </span>
                   )}
                 </div>
 
-                <div className="mt-4 border border-dashed border-gray-300 rounded-lg p-4 bg-gray-50">
+                <div className="border border-dashed border-gray-300 rounded-lg p-4 bg-gray-50">
                   <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
                     <div>
                       <div className="text-sm font-medium text-gray-800">
-                        {permitForm ? "Aktuelles Formular" : "Kein Formular hochgeladen"}
+                        {permitForm ? "Aktuelles Formular" : "Kein Formular hinterlegt"}
                       </div>
                       {permitForm && (
                         <div className="text-xs text-gray-500">

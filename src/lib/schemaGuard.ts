@@ -272,6 +272,22 @@ export function ensureLatestSchema(prisma: PrismaClient) {
       END;
       $$;
       `,
+      // City.requiresPosterImage
+      `
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1
+          FROM information_schema.columns
+          WHERE table_schema = current_schema()
+            AND table_name = 'City'
+            AND column_name = 'requiresPosterImage'
+        ) THEN
+          ALTER TABLE "City" ADD COLUMN "requiresPosterImage" BOOLEAN NOT NULL DEFAULT false;
+        END IF;
+      END;
+      $$;
+      `,
       // City.permitFormAssetId
       `
       DO $$
@@ -307,6 +323,7 @@ export function ensureLatestSchema(prisma: PrismaClient) {
       `ALTER TABLE "DistributionListItem" ALTER COLUMN "includePosterImage" SET DEFAULT false;`,
       `ALTER TABLE "DistributionListItem" ALTER COLUMN "includePermitForm" SET DEFAULT false;`,
       `ALTER TABLE "City" ALTER COLUMN "requiresPermitForm" SET DEFAULT false;`,
+      `ALTER TABLE "City" ALTER COLUMN "requiresPosterImage" SET DEFAULT false;`,
     ];
 
     const ignorePgCodes = new Set([
