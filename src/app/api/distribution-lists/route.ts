@@ -2,9 +2,10 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 
 export async function GET(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const debug = searchParams.get("debug") === "1";
+
   try {
-    const { searchParams } = new URL(request.url);
-    const debug = searchParams.get("debug") === "1";
     const clientId = searchParams.get("clientId");
     const status = searchParams.get("status");
     const scope = searchParams.get("scope") || "active";
