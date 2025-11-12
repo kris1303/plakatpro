@@ -112,10 +112,10 @@ export async function POST(
 					const asset = await getCachedAsset(distributionList.posterImageAsset);
 					if (asset) {
 						attachments.push({
-							filename: distributionList.posterImageAsset.fileName,
+							filename: distributionList.posterImageAsset?.fileName ?? "poster.jpg",
 							contentType:
 								asset.contentType ||
-								distributionList.posterImageAsset.contentType ||
+								distributionList.posterImageAsset?.contentType ||
 								"application/octet-stream",
 							content: asset.buffer,
 						});
