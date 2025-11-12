@@ -9,6 +9,61 @@ export function ensureLatestSchema(prisma: PrismaClient) {
 
   ensurePromise = (async () => {
     const statements: string[] = [
+      // Ensure PermitStatus enum exists
+      `
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM pg_type WHERE typname = 'PermitStatus'
+        ) THEN
+          CREATE TYPE "PermitStatus" AS ENUM (
+            'draft',
+            'sent',
+            'requested',
+            'info_needed',
+            'approved',
+            'approved_with_conditions',
+            'rejected'
+          );
+        END IF;
+      END;
+      $$;
+      `,
+      // Ensure PermitResponseType enum exists
+      `
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM pg_type WHERE typname = 'PermitResponseType'
+        ) THEN
+          CREATE TYPE "PermitResponseType" AS ENUM (
+            'approved',
+            'rejected',
+            'info_needed',
+            'other'
+          );
+        END IF;
+      END;
+      $$;
+      `,
+      // Ensure DistributionListStatus enum exists
+      `
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM pg_type WHERE typname = 'DistributionListStatus'
+        ) THEN
+          CREATE TYPE "DistributionListStatus" AS ENUM (
+            'draft',
+            'sent',
+            'accepted',
+            'rejected',
+            'revised'
+          );
+        END IF;
+      END;
+      $$;
+      `,
       // Campaign.archivedAt
       `
       DO $$
