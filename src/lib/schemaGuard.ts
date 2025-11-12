@@ -22,7 +22,7 @@ export function ensureLatestSchema(prisma: PrismaClient) {
         ) THEN
           ALTER TABLE "Campaign" ADD COLUMN "archivedAt" TIMESTAMP(3);
         END IF;
-      END
+      END;
       $$;
       `,
       // DistributionList.archivedAt
@@ -38,7 +38,7 @@ export function ensureLatestSchema(prisma: PrismaClient) {
         ) THEN
           ALTER TABLE "DistributionList" ADD COLUMN "archivedAt" TIMESTAMP(3);
         END IF;
-      END
+      END;
       $$;
       `,
       // DistributionList.posterImageAssetId
@@ -54,7 +54,7 @@ export function ensureLatestSchema(prisma: PrismaClient) {
         ) THEN
           ALTER TABLE "DistributionList" ADD COLUMN "posterImageAssetId" TEXT;
         END IF;
-      END
+      END;
       $$;
       `,
       // DistributionListItem.includePosterImage
@@ -70,7 +70,7 @@ export function ensureLatestSchema(prisma: PrismaClient) {
         ) THEN
           ALTER TABLE "DistributionListItem" ADD COLUMN "includePosterImage" BOOLEAN NOT NULL DEFAULT false;
         END IF;
-      END
+      END;
       $$;
       `,
       // DistributionListItem.includePermitForm
@@ -86,7 +86,7 @@ export function ensureLatestSchema(prisma: PrismaClient) {
         ) THEN
           ALTER TABLE "DistributionListItem" ADD COLUMN "includePermitForm" BOOLEAN NOT NULL DEFAULT false;
         END IF;
-      END
+      END;
       $$;
       `,
       // City.requiresPermitForm
@@ -102,7 +102,7 @@ export function ensureLatestSchema(prisma: PrismaClient) {
         ) THEN
           ALTER TABLE "City" ADD COLUMN "requiresPermitForm" BOOLEAN NOT NULL DEFAULT false;
         END IF;
-      END
+      END;
       $$;
       `,
       // City.permitFormAssetId
@@ -118,7 +118,7 @@ export function ensureLatestSchema(prisma: PrismaClient) {
         ) THEN
           ALTER TABLE "City" ADD COLUMN "permitFormAssetId" TEXT;
         END IF;
-      END
+      END;
       $$;
       `,
       // FileAsset table
@@ -142,12 +142,33 @@ export function ensureLatestSchema(prisma: PrismaClient) {
       `ALTER TABLE "City" ALTER COLUMN "requiresPermitForm" SET DEFAULT false;`,
     ];
 
+    const ignorePgCodes = new Set([
+      "42701", // column already exists
+      "42P07", // relation (table/index) already exists
+      "23505", // unique violation (duplicate constraint)
+    ]);
+
+    async function safeExecute(sql: string) {
+      try {
+        await prisma.$executeRawUnsafe(sql);
+      } catch (error: any) {
+        if (
+          error?.code === "P2010" &&
+          ignorePgCodes.has(error?.meta?.code as string)
+        ) {
+          console.warn("Schema guard Hinweis (ignoriert):", error?.meta?.message ?? error);
+          return;
+        }
+        throw error;
+      }
+    }
+
     for (const sql of statements) {
-      await prisma.$executeRawUnsafe(sql);
+      await safeExecute(sql);
     }
 
     // Foreign key for DistributionList.posterImageAssetId
-    await prisma.$executeRawUnsafe(`
+    await safeExecute(`
       DO $$
       BEGIN
         IF NOT EXISTS (
@@ -159,12 +180,12 @@ export function ensureLatestSchema(prisma: PrismaClient) {
             REFERENCES "FileAsset"("id")
             ON DELETE SET NULL ON UPDATE CASCADE;
         END IF;
-      END
+      END;
       $$;
     `);
 
     // Foreign key for City.permitFormAssetId
-    await prisma.$executeRawUnsafe(`
+    await safeExecute(`
       DO $$
       BEGIN
         IF NOT EXISTS (
@@ -176,7 +197,7 @@ export function ensureLatestSchema(prisma: PrismaClient) {
             REFERENCES "FileAsset"("id")
             ON DELETE SET NULL ON UPDATE CASCADE;
         END IF;
-      END
+      END;
       $$;
     `);
   })().catch((error) => {
