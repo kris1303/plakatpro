@@ -9,6 +9,30 @@ export function ensureLatestSchema(prisma: PrismaClient) {
 
   ensurePromise = (async () => {
     const statements: string[] = [
+      // EmailDirection enum
+      `
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM pg_type WHERE typname = 'EmailDirection'
+        ) THEN
+          CREATE TYPE "EmailDirection" AS ENUM ('outbound', 'inbound');
+        END IF;
+      END;
+      $$;
+      `,
+      // EmailStatus enum
+      `
+      DO $$
+      BEGIN
+        IF NOT EXISTS (
+          SELECT 1 FROM pg_type WHERE typname = 'EmailStatus'
+        ) THEN
+          CREATE TYPE "EmailStatus" AS ENUM ('queued', 'sent', 'delivered', 'failed', 'received');
+        END IF;
+      END;
+      $$;
+      `,
       // Ensure PermitStatus enum exists
       `
       DO $$
@@ -324,6 +348,7 @@ export function ensureLatestSchema(prisma: PrismaClient) {
       `ALTER TABLE "DistributionListItem" ALTER COLUMN "includePermitForm" SET DEFAULT false;`,
       `ALTER TABLE "City" ALTER COLUMN "requiresPermitForm" SET DEFAULT false;`,
       `ALTER TABLE "City" ALTER COLUMN "requiresPosterImage" SET DEFAULT false;`,
+      `ALTER TABLE "PermitEmail" ALTER COLUMN "status" SET DEFAULT 'queued';`,
       // PermitEmail table
       `
       CREATE TABLE IF NOT EXISTS "PermitEmail" (
