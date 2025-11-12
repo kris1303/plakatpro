@@ -69,6 +69,11 @@ export async function POST(
 			return downloaded;
 		};
 
+		const formatDate = (value: string | Date | null | undefined) => {
+			if (!value) return null;
+			return new Date(value).toLocaleDateString("de-DE");
+		};
+
 		for (const item of distributionList.items) {
 			const recipient = item.city.email;
 
@@ -83,46 +88,19 @@ export async function POST(
 				continue;
 			}
 
-			const subject = `Plakatierungsantrag – ${distributionList.eventName} – ${item.city.name}`;
+			const formattedStart = formatDate(distributionList.startDate);
+			const formattedEnd = formatDate(distributionList.endDate);
+			const formattedEventDate = formatDate(distributionList.eventDate);
+			const distanceInfo = item.distanceKm
+				? `${item.distanceKm.toFixed(1)} km`
+				: null;
 
-			const textBody = `Guten Tag ${item.city.name},
-
-wir beantragen die Genehmigung zur Plakatierung für "${distributionList.eventName}" im Zeitraum ${new Date(
-				distributionList.startDate
-			).toLocaleDateString("de-DE")} bis ${new Date(
-				distributionList.endDate
-			).toLocaleDateString("de-DE")}.
-
-Kommunendetails:
-- Anzahl Plakate: ${item.quantity}
-- Format: ${item.posterSize}
-- Entfernung: ${item.distanceKm ? `${item.distanceKm.toFixed(1)} km` : "nicht verfügbar"}
-
-Anbei finden Sie die relevanten Unterlagen zur Prüfung. Bei Rückfragen stehen wir gerne zur Verfügung.
-
-Vielen Dank und freundliche Grüße
-Werbeinsel`;
-
-			const htmlBody = `
-				<p>Guten Tag ${item.city.name},</p>
-				<p>wir beantragen die Genehmigung zur Plakatierung für "${distributionList.eventName}" im Zeitraum
-				${new Date(distributionList.startDate).toLocaleDateString("de-DE")}
-				bis ${new Date(distributionList.endDate).toLocaleDateString("de-DE")}.</p>
-				<p><strong>Kommunendetails:</strong></p>
-				<ul>
-					<li>Anzahl Plakate: <strong>${item.quantity}</strong></li>
-					<li>Format: <strong>${item.posterSize}</strong></li>
-					<li>Entfernung: <strong>${
-						item.distanceKm ? `${item.distanceKm.toFixed(1)} km` : "nicht verfügbar"
-					}</strong></li>
-				</ul>
-				<p>Anbei finden Sie die relevanten Unterlagen zur Prüfung. Bei Rückfragen stehen wir gerne zur Verfügung.</p>
-				<p>Vielen Dank und freundliche Grüße<br/>Werbeinsel</p>
-			`;
-
-			const attachments: Parameters<typeof sendRawEmail>[0]["attachments"] = [];
+			const subject = `Plakatierungsantrag – Veranstaltung „${distributionList.eventName}“ vom ${formattedStart} bis ${formattedEnd}`;
 
 			const attachmentMeta: { filename: string; contentType: string }[] = [];
+			const attachments: Parameters<typeof sendRawEmail>[0]["attachments"] = [];
+			let textBody = "";
+			let htmlBody = "";
 
 			try {
 				if (
@@ -169,6 +147,80 @@ Werbeinsel`;
 						});
 					}
 				}
+
+				const plainAttachments =
+					attachmentMeta.length > 0
+						? `\nBeigefügte Unterlagen:\n${attachmentMeta
+								.map((file) => `- ${file.filename}`)
+								.join("\n")}\n`
+						: "";
+
+				const htmlAttachments =
+					attachmentMeta.length > 0
+						? `<p><strong>Beigefügte Unterlagen:</strong></p>
+				<ul>
+					${attachmentMeta
+						.map(
+							(file) =>
+								`<li>${file.filename}</li>`
+						)
+						.join("")}
+				</ul>`
+						: "";
+
+				textBody = `Sehr geehrte Damen und Herren der ${item.city.name},
+
+wir bitten um die Genehmigung der Plakatierungsmaßnahme für unsere Veranstaltung „${distributionList.eventName}“.
+
+Veranstaltungsdaten:
+- Zeitraum: ${formattedStart} bis ${formattedEnd}
+${formattedEventDate ? `- Veranstaltungstag: ${formattedEventDate}\n` : ""}${
+					distributionList.eventAddress
+						? `- Veranstaltungsort: ${distributionList.eventAddress}\n`
+						: ""
+				}Geplante Plakatierung in Ihrem Zuständigkeitsbereich:
+- Anzahl Plakate: ${item.quantity}
+- Format: ${item.posterSize}${
+					distanceInfo ? `\n- Entfernung zum Veranstaltungsort: ${distanceInfo}` : ""
+				}
+
+${plainAttachments}Für Rückfragen stehen wir jederzeit zur Verfügung und freuen uns über eine kurze Rückmeldung zu Ihrem Entscheid.
+
+Vielen Dank und freundliche Grüße
+Kristijan Cajic
+Werbeinsel`;
+
+				htmlBody = `
+				<p>Sehr geehrte Damen und Herren der ${item.city.name},</p>
+				<p>wir bitten um die Genehmigung der Plakatierungsmaßnahme für unsere Veranstaltung „<strong>${distributionList.eventName}</strong>“.</p>
+				<p><strong>Veranstaltungsdaten:</strong></p>
+				<ul>
+					<li>Zeitraum: <strong>${formattedStart} bis ${formattedEnd}</strong></li>
+					${
+						formattedEventDate
+							? `<li>Veranstaltungstag: <strong>${formattedEventDate}</strong></li>`
+							: ""
+					}
+					${
+						distributionList.eventAddress
+							? `<li>Veranstaltungsort: <strong>${distributionList.eventAddress}</strong></li>`
+							: ""
+					}
+				</ul>
+				<p><strong>Geplante Plakatierung in Ihrem Zuständigkeitsbereich:</strong></p>
+				<ul>
+					<li>Anzahl Plakate: <strong>${item.quantity}</strong></li>
+					<li>Format: <strong>${item.posterSize}</strong></li>
+					${
+						distanceInfo
+							? `<li>Entfernung zum Veranstaltungsort: <strong>${distanceInfo}</strong></li>`
+							: ""
+					}
+				</ul>
+				${htmlAttachments}
+				<p>Für Rückfragen stehen wir jederzeit gerne zur Verfügung und freuen uns über eine kurze Rückmeldung zu Ihrem Entscheid.</p>
+				<p>Vielen Dank und freundliche Grüße<br/>Kristijan Cajic<br/>Werbeinsel</p>
+			`;
 
 				const response = await sendRawEmail({
 					from: process.env.SES_FROM_ADDRESS || "",
