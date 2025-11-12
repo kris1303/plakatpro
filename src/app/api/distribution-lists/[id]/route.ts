@@ -5,6 +5,9 @@ export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const url = new URL(request.url);
+  const debugMode = url.searchParams.get("debug") === "1";
+
   try {
     const { id } = await params;
     const distributionList = await prisma.distributionList.findUnique({
@@ -43,10 +46,16 @@ export async function GET(
     }
 
     return NextResponse.json(distributionList);
-  } catch (error) {
+  } catch (error: any) {
     console.error("Fehler beim Laden der Verteilerliste:", error);
     return NextResponse.json(
-      { error: "Fehler beim Laden der Verteilerliste" },
+      debugMode
+        ? {
+            error: "Fehler beim Laden der Verteilerliste",
+            details: error?.message,
+            stack: error?.stack,
+          }
+        : { error: "Fehler beim Laden der Verteilerliste" },
       { status: 500 }
     );
   }
